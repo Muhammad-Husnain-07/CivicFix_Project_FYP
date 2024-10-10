@@ -3,8 +3,10 @@ import { StyleSheet } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedButton } from "@/components/ThemedButton";
+import { useNavigation } from "expo-router";
 
 export default function MainScreen() {
+  const navigation = useNavigation();
   return (
     <>
       <Stack.Screen options={{ title: "Welcome" }} />
@@ -12,7 +14,9 @@ export default function MainScreen() {
         <ThemedText type="title">CivicFix</ThemedText>
           <ThemedView style={styles.linkContainer}>
             <Link href="/" style={styles.link}>
-              <ThemedButton title="Login" />
+              <ThemedButton title="Login" onPress={() => {
+               navigation.navigate('(auth)')
+                }} />
             </Link>
           </ThemedView>
           <ThemedView style={styles.linkContainer}>
