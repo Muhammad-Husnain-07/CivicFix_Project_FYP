@@ -6,27 +6,24 @@ import {Link} from 'expo-router';
 import React from 'react';
 import {StyleSheet} from 'react-native';
 
-export default LoginScreen = () => {
+export default RegisterScreen = () => {
   return (
     <ThemedView style={styles.container}>
       <ThemedText type="title">CivicFix</ThemedText>
       <ThemedView style={styles.subContainer}>
-        <ThemedText type="subtitle">Login</ThemedText>
+        <ThemedText type="subtitle">Register</ThemedText>
         <ThemedView style={styles.fieldContainer}>
           <ThemedTextField placeholder="CNIC" style={styles.fieldStyling} />
         </ThemedView>
         <ThemedView style={styles.fieldContainer}>
-          <ThemedTextField placeholder="Password" style={styles.fieldStyling} />
-        </ThemedView>
-        <ThemedView style={styles.fieldContainer}>
-          <ThemedButton type="outlined" title="Login" style={styles.buttonStyling} />
+          <ThemedButton type="outlined" title="Register" style={styles.buttonStyling} />
         </ThemedView>
         <ThemedView style={styles.linkContainer}>
           <ThemedText type="default">
-            Don't have an account?{' '}
+            Already have an account?{' '}
             <ThemedText type="link">
               {' '}
-              <Link href="/(auth)/register">Register</Link>{' '}
+              <Link href="/(auth)/login">Login</Link>{' '}
             </ThemedText>
           </ThemedText>
         </ThemedView>
