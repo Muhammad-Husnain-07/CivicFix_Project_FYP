@@ -2,11 +2,12 @@ import {ThemedButton} from '@/components/ThemedButton';
 import {ThemedText} from '@/components/ThemedText';
 import ThemedTextField from '@/components/ThemedTextField';
 import {ThemedView} from '@/components/ThemedView';
-import {Link} from 'expo-router';
+import {Link, useNavigation} from 'expo-router';
 import React from 'react';
 import {StyleSheet} from 'react-native';
 
 export default LoginScreen = () => {
+  const navigation = useNavigation(); 
   return (
     <ThemedView style={styles.container}>
       <ThemedText type="title">CivicFix</ThemedText>
@@ -18,8 +19,15 @@ export default LoginScreen = () => {
         <ThemedView style={styles.fieldContainer}>
           <ThemedTextField placeholder="Password" style={styles.fieldStyling} />
         </ThemedView>
-        <ThemedView style={styles.fieldContainer}>
-          <ThemedButton type="outlined" title="Login" style={styles.buttonStyling} />
+        <ThemedView style={styles.buttonContainer}>
+          <ThemedButton
+            type="outlined"
+            title="Login"
+            onPress={() => {
+              navigation.reset({index: 0, routes: [{name: '(drawer)'}]});
+            }}
+            style={styles.buttonStyling}
+          />
         </ThemedView>
         <ThemedView style={styles.linkContainer}>
           <ThemedText type="default">

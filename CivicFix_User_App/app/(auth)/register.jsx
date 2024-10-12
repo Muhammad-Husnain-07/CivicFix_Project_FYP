@@ -2,11 +2,12 @@ import {ThemedButton} from '@/components/ThemedButton';
 import {ThemedText} from '@/components/ThemedText';
 import ThemedTextField from '@/components/ThemedTextField';
 import {ThemedView} from '@/components/ThemedView';
-import {Link} from 'expo-router';
+import {Link, useNavigation} from 'expo-router';
 import React from 'react';
 import {StyleSheet} from 'react-native';
 
 export default RegisterScreen = () => {
+  const navigation = useNavigation();
   return (
     <ThemedView style={styles.container}>
       <ThemedText type="title">CivicFix</ThemedText>
@@ -15,8 +16,17 @@ export default RegisterScreen = () => {
         <ThemedView style={styles.fieldContainer}>
           <ThemedTextField placeholder="CNIC" style={styles.fieldStyling} />
         </ThemedView>
-        <ThemedView style={styles.fieldContainer}>
-          <ThemedButton type="outlined" title="Register" style={styles.buttonStyling} />
+        <ThemedView style={styles.buttonContainer}>
+          <ThemedButton
+            type="outlined"
+            title="Register"
+            onPress={() =>
+              navigation.navigate('(auth)', {
+                screen: 'user_info',
+              })
+            }
+            style={styles.buttonStyling}
+          />
         </ThemedView>
         <ThemedView style={styles.linkContainer}>
           <ThemedText type="default">
