@@ -24,6 +24,7 @@ export const Colors = {
     buttonText: '#FFFFFF', // Button text color
     cardShadow: 'rgba(0, 0, 0, 0.1)', // Light shadow for card elements
     error: '#D32F2F', // Error text and input border color
+    danger: '#D32F2F', // Danger text or border color
     success: '#388E3C', // Success text or border color
     warning: '#FFA000', // Warning text or border color
     info: '#1976D2', // Info messages or icons
@@ -46,6 +47,7 @@ export const Colors = {
     buttonText: '#FFFFFF', // Button text color
     cardShadow: 'rgba(0, 0, 0, 0.5)', // Darker shadow for card elements
     error: '#D32F2F', // Error text and input border color
+    danger: '#D32F2F', // Danger text or border color
     success: '#388E3C', // Success text or border color
     warning: '#FFA000', // Warning text or border color
     info: '#1976D2', // Info messages or icons

@@ -1,0 +1,72 @@
+import {CameraView, CameraType, useCameraPermissions} from 'expo-camera';
+import {useState} from 'react';
+import {Button, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {ThemedView} from './ThemedView';
+import {ThemedButton} from './ThemedButton';
+import {ThemedText} from './ThemedText';
+
+export default function Camera() {
+  const [facing, setFacing] = useState('back');
+  const [permission, requestPermission] = useCameraPermissions();
+
+  if (!permission) {
+    // Camera permissions are still loading.
+    return <View />;
+  }
+
+  if (!permission.granted) {
+    // Camera permissions are not granted yet.
+    return (
+      <ThemedView style={styles.container}>
+        <ThemedText style={styles.message}>We need your permission to show the camera</ThemedText>
+        <ThemedButton onPress={requestPermission} title="grant permission" />
+      </ThemedView>
+    );
+  }
+
+  function toggleCameraFacing() {
+    setFacing(current => (current === 'back' ? 'front' : 'back'));
+  }
+
+  return (
+    <ThemedView style={styles.container}>
+      <CameraView style={styles.camera} facing={facing}>
+        <ThemedView style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
+            <ThemedText style={styles.text}>Flip Camera</ThemedText>
+          </TouchableOpacity>
+        </ThemedView>
+      </CameraView>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  message: {
+    textAlign: 'center',
+    paddingBottom: 10,
+  },
+  camera: {
+    flex: 1,
+  },
+  buttonContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: 'transparent',
+    margin: 64,
+  },
+  button: {
+    flex: 1,
+    alignSelf: 'flex-end',
+    alignItems: 'center',
+  },
+  text: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+});

@@ -15,5 +15,5 @@
     "expo-env.d.ts",
     "**/*.js",
     "**/*.jsx"
-, "hooks/useThemeColor.js", "hooks/useColorScheme.web.js", "hooks/useColorScheme.js", "constants/Colors.js", "components/navigation/TabBarIcon.jsx", "app/(drawer)/(tabs)/_layout.jsx", "app/(drawer)/(tabs)/explore.jsx", "app/(drawer)/(tabs)/index.jsx", "app/_layout.jsx", "app/+html.jsx", "app/+not-found.jsx", "components/ThemedText.jsx", "components/ThemedView.jsx"  ]
+, "hooks/useThemeColor.js", "hooks/useColorScheme.web.js", "hooks/useColorScheme.js", "constants/Colors.js", "components/navigation/TabBarIcon.jsx", "app/(drawer)/(tabs)/_layout.jsx", "app/(drawer)/(tabs)/explore.jsx", "app/(drawer)/(tabs)/index.jsx", "app/_layout.jsx", "app/+html.jsx", "app/+not-found.jsx", "components/ThemedText.jsx", "components/ThemedView.jsx", "components/ThemedBadge"  ]
 }

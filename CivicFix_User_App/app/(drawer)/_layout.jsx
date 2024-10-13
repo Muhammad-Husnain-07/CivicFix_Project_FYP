@@ -4,7 +4,6 @@ import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Drawer} from 'expo-router/drawer';
 import {ThemedView} from '@/components/ThemedView';
 import ThemedIcon from '@/components/ThemedIcon';
-import {ThemedText} from '@/components/ThemedText';
 import {Colors} from '@/constants/Colors';
 import {useColorScheme} from '@/hooks/useColorScheme.web';
 import {useNavigation} from 'expo-router';
@@ -53,7 +52,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 10,
-    padding: 16,
+    marginTop: 25,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
 });
