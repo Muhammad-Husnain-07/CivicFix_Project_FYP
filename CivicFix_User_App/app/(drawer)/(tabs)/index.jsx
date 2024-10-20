@@ -1,9 +1,11 @@
 import React from 'react';
 import {StyleSheet, ScrollView, Pressable} from 'react-native';
 import {ThemedView} from '@/components/ThemedView';
-import ThemedCard from '@/components/ThemedCard';
+import ThemedComplaintCard from '@/components/ThemedComplaintCard';
 import {ThemedText} from '@/components/ThemedText';
+import {useNavigation} from 'expo-router';
 export default function HomeScreen() {
+  const navigation = useNavigation();
   //Generate Random Objects Array
   const Complaints = [
     {id: 1, title: 'Complaint1', status: 'Pending'},
@@ -24,12 +26,16 @@ export default function HomeScreen() {
         </ThemedView>
       )}
       <ScrollView style={{height: '100%', width: '100%'}}>
-        <Pressable onPress={() =>{}}>
-        <ThemedView style={styles.subContainer}>
-          {Complaints?.map(item => (
-            <ThemedCard key={item?.id} data={item} />
-          ))}
-        </ThemedView>
+        <Pressable
+          onPress={() => {
+            navigation.navigate('(complaint)', {screen: 'view_complaint'});
+          }}
+        >
+          <ThemedView style={styles.subContainer}>
+            {Complaints?.map(item => (
+              <ThemedComplaintCard key={item?.id} data={item} />
+            ))}
+          </ThemedView>
         </Pressable>
       </ScrollView>
     </ThemedView>

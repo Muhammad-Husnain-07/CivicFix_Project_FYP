@@ -6,6 +6,7 @@ export default function ComplaintLayout() {
     <Stack initialRouteName="camera" screenOptions={{headerShown: false}}>
       <Stack.Screen name="camera" options={{headerShown: false}} />
       <Stack.Screen name="complaint_details" options={{headerShown: true , title: 'Complaint Details'}} />
+      <Stack.Screen name="view_complaint" options={{headerShown: true , title: 'View Complaint'}} />
     </Stack>
   );
 }
