@@ -11,7 +11,7 @@ export default ThemedTextField = ({style, lightColor, darkColor, ...otherProps})
     <TextInput
       style={[
         {backgroundColor, borderColor, color: textColor},
-        InputFieldStyle.input, // Base input styles
+        otherProps.multiline ? InputFieldStyle.inputMultiline : InputFieldStyle.input, // Base input styles
         style, // Additional styles
       ]}
       placeholderTextColor={useThemeColor({light: '#9BA1A6', dark: '#6C757D'}, 'placeholder')} // Placeholder color
@@ -31,5 +31,17 @@ const InputFieldStyle = StyleSheet.create({
     padding: 10,
     borderRadius: 4,
     fontSize: 16,
+  },
+  inputMultiline: {
+    height: 150,
+    textAlignVertical: 'top',
+    padding: 10,
+    fontSize: 16,
+    borderWidth: 1,
+    borderRadius: 4,
+    margin: 12,
+    width: '100%',
+    minWidth: 200,
+    maxWidth: 300,
   },
 });

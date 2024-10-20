@@ -42,7 +42,7 @@ const Header = () => {
         }}
         style={{marginRight: 10}}
       />
-      <ThemedIcon name={'add'} onPress={() => {}} style={{marginRight: 10}} />
+      <ThemedIcon name={'add'} onPress={() => {navigation.navigate('(complaint)', {screen: 'camera'})}} style={{marginRight: 10}} />
     </ThemedView>
   );
 };

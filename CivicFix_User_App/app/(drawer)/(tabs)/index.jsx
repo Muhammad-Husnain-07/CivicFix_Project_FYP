@@ -1,11 +1,9 @@
 import React from 'react';
-import {StyleSheet, Platform, ScrollView, Pressable} from 'react-native';
+import {StyleSheet, ScrollView, Pressable} from 'react-native';
 import {ThemedView} from '@/components/ThemedView';
 import ThemedCard from '@/components/ThemedCard';
 import {ThemedText} from '@/components/ThemedText';
-import Camera from '@/components/Camera';
 export default function HomeScreen() {
-  const [flag, setFlag] = React.useState(false);
   //Generate Random Objects Array
   const Complaints = [
     {id: 1, title: 'Complaint1', status: 'Pending'},
@@ -26,8 +24,7 @@ export default function HomeScreen() {
         </ThemedView>
       )}
       <ScrollView style={{height: '100%', width: '100%'}}>
-      {/* {flag &&    <Camera/>} */}
-        <Pressable onPress={() =>{alert(flag); setFlag(!flag)}}>
+        <Pressable onPress={() =>{}}>
         <ThemedView style={styles.subContainer}>
           {Complaints?.map(item => (
             <ThemedCard key={item?.id} data={item} />

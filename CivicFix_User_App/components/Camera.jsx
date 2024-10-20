@@ -1,42 +1,100 @@
-import {CameraView, CameraType, useCameraPermissions} from 'expo-camera';
 import {useState} from 'react';
-import {Button, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, View, Image} from 'react-native';
+import * as ImagePicker from 'expo-image-picker'; // Import ImagePicker
 import {ThemedView} from './ThemedView';
-import {ThemedButton} from './ThemedButton';
 import {ThemedText} from './ThemedText';
 
-export default function Camera() {
-  const [facing, setFacing] = useState('back');
-  const [permission, requestPermission] = useCameraPermissions();
+export default function Camera({navigation}) {
+  const [photo, setPhoto] = useState(null); // To store the selected/taken photo
+  const [status, requestPermission] = ImagePicker.useCameraPermissions();
 
-  if (!permission) {
-    // Camera permissions are still loading.
+  if (!status) {
+    // Permissions are still loading.
     return <View />;
   }
 
-  if (!permission.granted) {
+  if (!status.granted) {
     // Camera permissions are not granted yet.
     return (
       <ThemedView style={styles.container}>
-        <ThemedText style={styles.message}>We need your permission to show the camera</ThemedText>
-        <ThemedButton onPress={requestPermission} title="grant permission" />
+        <ThemedText style={styles.message}>
+          We need your permission to access the camera and gallery
+        </ThemedText>
+        <TouchableOpacity onPress={requestPermission}>
+          <ThemedText>Grant Permission</ThemedText>
+        </TouchableOpacity>
       </ThemedView>
     );
   }
 
-  function toggleCameraFacing() {
-    setFacing(current => (current === 'back' ? 'front' : 'back'));
-  }
+  const openImagePicker = async () => {
+    // Open Image Picker to allow selecting from the gallery
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setPhoto(result.assets[0].uri); // Store the selected photo
+    }
+  };
+
+  const takePhoto = async () => {
+    // Open the camera to take a new photo
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setPhoto(result.assets[0].uri); // Store the taken photo
+    }
+  };
+
+  const handleRetake = () => {
+    setPhoto(null); // Clear the photo to allow retaking or picking again
+  };
+
+  const handleSubmit = () => {
+    console.log('Photo submitted:', photo);
+    // Add logic to handle submission of the photo
+    navigation();
+  };
 
   return (
     <ThemedView style={styles.container}>
-      <CameraView style={styles.camera} facing={facing}>
-        <ThemedView style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-            <ThemedText style={styles.text}>Flip Camera</ThemedText>
-          </TouchableOpacity>
-        </ThemedView>
-      </CameraView>
+      {photo ? (
+        // If a photo is selected/taken, display it and the buttons below
+        <>
+          <Image source={{uri: photo}} style={styles.photoPreview} />
+
+          <View style={styles.bottomButtonContainer}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleRetake}>
+              <ThemedText style={styles.text}>Retake</ThemedText>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.actionButton} onPress={handleSubmit}>
+              <ThemedText style={styles.text}>Submit</ThemedText>
+            </TouchableOpacity>
+          </View>
+        </>
+      ) : (
+        // If no photo is selected/taken, show the options to take or pick one
+        <>
+          {/* Take Photo Button */}
+          <View style={styles.bottomButtonContainer}>
+            <TouchableOpacity style={styles.centerButton} onPress={takePhoto}>
+              <ThemedText style={styles.text}>Take Photo</ThemedText>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.centerButton} onPress={openImagePicker}>
+              <ThemedText style={styles.text}>Choose from Gallery</ThemedText>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
     </ThemedView>
   );
 }
@@ -45,28 +103,39 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-  },
-  message: {
-    textAlign: 'center',
-    paddingBottom: 10,
-  },
-  camera: {
-    flex: 1,
-  },
-  buttonContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: 'transparent',
-    margin: 64,
-  },
-  button: {
-    flex: 1,
-    alignSelf: 'flex-end',
     alignItems: 'center',
   },
+  photoPreview: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
   text: {
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: 'bold',
     color: 'white',
+  },
+  bottomButtonContainer: {
+    position: 'absolute',
+    bottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '90%',
+    alignItems: 'center',
+  },
+  centerButton: {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 50,
+  },
+  actionButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    marginHorizontal: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 8,
   },
 });
