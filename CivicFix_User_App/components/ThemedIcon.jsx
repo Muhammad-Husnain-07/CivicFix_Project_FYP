@@ -1,5 +1,4 @@
 import React from 'react';
-import {StyleSheet} from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {useThemeColor} from '@/hooks/useThemeColor'; // Make sure the path is correct
 

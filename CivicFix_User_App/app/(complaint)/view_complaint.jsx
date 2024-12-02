@@ -1,12 +1,14 @@
+import React from 'react';
+import {StyleSheet} from 'react-native';
 import ThemedBadge from '@/components/ThemedBadge';
-import {ThemedButton} from '@/components/ThemedButton';
 import ThemedDetailCard from '@/components/ThemedDetailCard';
 import {ThemedText} from '@/components/ThemedText';
 import {ThemedView} from '@/components/ThemedView';
-import React from 'react';
-import {StyleSheet} from 'react-native';
+import {useLocalSearchParams} from 'expo-router';
 
 const ViewComplaintScreen = () => {
+  const params = useLocalSearchParams();
+  const complaint = params;
   return (
     <ThemedView style={styles.container}>
       {/* Complaint Details Card */}
@@ -16,22 +18,32 @@ const ViewComplaintScreen = () => {
           <ThemedText type="heading5" style={styles.statusLabel} primaryColor>
             Status
           </ThemedText>
-          <ThemedBadge status="warning" style={styles.badge}>
-            Pending
+          <ThemedBadge
+            status={
+              complaint?.status?.toLowerCase() === 'pending'
+                ? 'warning'
+                : complaint?.status?.toLowerCase() === 'resolved'
+                  ? 'success'
+                  : complaint?.status?.toLowerCase() === 'inprogress'
+                    ? 'info'
+                    : 'danger'
+            }
+            style={styles.badge}
+          >
+            {complaint?.status}
           </ThemedBadge>
         </ThemedView>
 
         {/* Complaint Details */}
-        <DetailRow label="Department" value="LESCO" />
-        <DetailRow label="Complaint Category" value="Meter Issues" />
-        <DetailRow label="Complaint Type" value="Non-functional Meter" />
+        <DetailRow label="Department" value={complaint?.department} />
+        <DetailRow label="Complaint Category" value={complaint?.complaint_category} />
+        <DetailRow label="Complaint Type" value={complaint?.complaint_type} />
+        <DetailRow label="Complaint Detail" value={complaint?.complaint_details} />
         <DetailRow
-          label="Complaint Detail"
-          value="The meter stopped working 2 days ago and needs urgent replacement."
+          label="Assigned Team"
+          value={complaint?.assigned_team ?? 'Soon to be assigned'}
         />
-        <DetailRow label="Assigned Team" value="Technician Team A" />
       </ThemedDetailCard>
-
     </ThemedView>
   );
 };

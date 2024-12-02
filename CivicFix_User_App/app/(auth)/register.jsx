@@ -3,18 +3,25 @@ import {ThemedText} from '@/components/ThemedText';
 import ThemedTextField from '@/components/ThemedTextField';
 import {ThemedView} from '@/components/ThemedView';
 import {Link, useNavigation} from 'expo-router';
-import React from 'react';
+import React, {useState} from 'react';
 import {StyleSheet} from 'react-native';
 
 export default RegisterScreen = () => {
   const navigation = useNavigation();
+  const [cnic, setCnic] = useState('');
+
   return (
     <ThemedView style={styles.container}>
       <ThemedText type="title">CivicFix</ThemedText>
       <ThemedView style={styles.subContainer}>
         <ThemedText type="subtitle">Register</ThemedText>
         <ThemedView style={styles.fieldContainer}>
-          <ThemedTextField placeholder="CNIC" style={styles.fieldStyling} />
+          <ThemedTextField
+            placeholder="CNIC"
+            style={styles.fieldStyling}
+            onChangeText={text => setCnic(text)}
+            value={cnic}
+          />
         </ThemedView>
         <ThemedView style={styles.buttonContainer}>
           <ThemedButton
@@ -23,6 +30,9 @@ export default RegisterScreen = () => {
             onPress={() =>
               navigation.navigate('(auth)', {
                 screen: 'user_info',
+                params: {
+                  cnic: cnic,
+                },
               })
             }
             style={styles.buttonStyling}

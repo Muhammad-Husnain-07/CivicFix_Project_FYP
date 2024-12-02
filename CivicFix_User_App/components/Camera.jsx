@@ -4,7 +4,7 @@ import * as ImagePicker from 'expo-image-picker'; // Import ImagePicker
 import {ThemedView} from './ThemedView';
 import {ThemedText} from './ThemedText';
 
-export default function Camera({navigation}) {
+export default function Camera({onSubmit}) {
   const [photo, setPhoto] = useState(null); // To store the selected/taken photo
   const [status, requestPermission] = ImagePicker.useCameraPermissions();
 
@@ -20,7 +20,7 @@ export default function Camera({navigation}) {
         <ThemedText style={styles.message}>
           We need your permission to access the camera and gallery
         </ThemedText>
-        <TouchableOpacity onPress={requestPermission}>
+        <TouchableOpacity style={styles.button} onPress={requestPermission}>
           <ThemedText>Grant Permission</ThemedText>
         </TouchableOpacity>
       </ThemedView>
@@ -58,9 +58,8 @@ export default function Camera({navigation}) {
   };
 
   const handleSubmit = () => {
-    console.log('Photo submitted:', photo);
     // Add logic to handle submission of the photo
-    navigation();
+    onSubmit(photo);
   };
 
   return (
@@ -137,5 +136,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     borderRadius: 8,
+  },
+  button: {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 50,
   },
 });
