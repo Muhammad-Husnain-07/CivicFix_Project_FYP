@@ -1,73 +1,94 @@
-import React from 'react';
-import './App.css';
-import { FaHome, FaUser, FaBell, FaCog, FaSignOutAlt, FaTasks } from "react-icons/fa";
-import DonutChart from './DonutChart';
+import React, { useState, useEffect } from "react";
+import { Routes, Route } from "react-router-dom"; // No Router here, only Routes and Route
+import Dashboard from "./Dashboard/Dashboard";
+import Sidebar from "./Sidebar/Sidebar";
+import User from "./User Management/User";
+import Team from "./Team Management/Team";
+import Login from "./Login/Login";
+import Complaint from "./Complaint/Complaint";
 
 function App() {
-  const totalcomplaints = [
-    { name: 'Total complain', value: 100 }
-  ];
+  const [userRole, setUserRole] = useState(null); // State to track the user's role
 
-  const completed = [
-    { name: 'Completed', value: 70 }
-    
-  ];
+  // Simulate user authentication (Replace with actual login logic)
+  useEffect(() => {
+    const storedRole = localStorage.getItem("userRole");
+    if (storedRole) {
+      setUserRole(storedRole); // Retrieve role from local storage if available
+    }
+  }, []);
 
-  const remaining = [
-    { name: 'Remaining', value: 30 }
-    
-  ];
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem("userRole");
+    setUserRole(null);
+  };
+
   return (
-    <>
-   <div className="app-container">
-  <nav className="navbar">
-    <div className="heading">
-      <h1>CIVICFIX</h1>
-    </div>
-    <ul className="navbar-menu">
-      <li><FaHome className="icon" />Dashboard</li>
-      <li><FaUser className="icon" />Profile</li>
-      <li><FaBell className="icon" />Complaints</li>
-      <li><FaTasks className="icon" />Notification</li>
-      <li><FaCog className="icon" />Setting</li>
-      <li><FaSignOutAlt className="icon" />Logout</li>
-    </ul>
-  </nav>
-
-  <div className="main-content">
-    <h1 className="dash">Dashboard</h1>
-    <div className='welcome'> <h3 className='wel'>Welcome back, Admin</h3>
-    </div>
     <div className="App">
-      <h1>Statistics Overview</h1>
+      <Routes>
+        {/* Login Route */}
+        <Route
+          path="/"
+          element={<Login setUserRole={setUserRole} />}
+        />
 
-      
-      <DonutChart
-        data={totalcomplaints}
-        colors={['#0088FE', '#FF0000']}
-        title="Total complaints"
-      />
+        {/* Protected Routes */}
+        {userRole && (
+          <>
+            {/* Dashboard Route (Only visible to superAdmin) */}
+            {userRole === "superAdmin" && (
+              <Route
+                path="/Dashboard"
+                element={
+                  <>
+                    <Sidebar userRole={userRole} />
+                    <Dashboard />
+                  </>
+                }
+              />
+            )}
 
-      
-      <DonutChart
-        data={completed}
-        colors={['#00C49F', '#FFBB28']}
-        title="Completed"
-      />
+            {/* Complaint Route (Visible to both roles) */}
+            <Route
+              path="/complaint"
+              element={
+                <>
+                  <Sidebar userRole={userRole} />
+                  <Complaint />
+                </>
+              }
+            />
 
-      
-      <DonutChart
-        data={remaining}
-        colors={['#8884d8', '#FF8042']}
-        title="Remaining"
-      />
+            {/* Team Management Route (Only visible to subAdmin) */}
+            {userRole === "subAdmin" && (
+              <Route
+                path="/team-management"
+                element={
+                  <>
+                    <Sidebar userRole={userRole} />
+                    <Team />
+                  </>
+                }
+              />
+            )}
+
+            {/* User Management Route (Only visible to subAdmin) */}
+            {userRole === "subAdmin" && (
+              <Route
+                path="/user-management"
+                element={
+                  <>
+                    <Sidebar userRole={userRole} />
+                    <User />
+                  </>
+                }
+              />
+            )}
+          </>
+        )}
+      </Routes>
     </div>
-  </div>
-  
-</div>
-
-
-   </>
   );
 }
 

@@ -1,0 +1,31 @@
+.card {
+    width: 170px;
+    height: 120px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-top: 6px;
+  }
+  
+  .iconn {
+    font-size: 20px;
+    color: #34d399; /* Green color for icon */
+    margin-bottom: 10px;
+  }
+  
+  .card .title {
+    font-size: 14px;
+    color: #b0b0b0;
+  }
+  
+  .card .count {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+  }
+  
