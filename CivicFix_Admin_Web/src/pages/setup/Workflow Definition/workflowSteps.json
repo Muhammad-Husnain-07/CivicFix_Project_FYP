@@ -1,0 +1,135 @@
+[
+    {
+      "title": "Call Center Assisted Service",
+      "description": "Workflow Description Goes Here",
+      "node": "main-node",
+      "childNode": [
+        {
+          "title": "Qualification Step",
+          "description": "Workflow Description Goes Here",
+          "users": [
+            {
+              "name": "John Doe",
+              "avatar": {
+                "alt": "John Doe",
+                "src": "https://i.pravatar.cc/10"
+              }
+            },
+            {
+              "name": "Sarahh",
+              "avatar": {
+                "alt": "Sarah",
+                "src": "https://i.pravatar.cc/9"
+              }
+            },
+            {
+              "name": "Bob Smith",
+              "avatar": {
+                "alt": "Bob Smith",
+                "src": "https://i.pravatar.cc/30"
+              }
+            }
+          ],
+          "node": "user-node",
+          "childNode": [
+            {
+              "title": "Complaint",
+              "description": "Workflow Description Goes Here",
+              "node": "logical-node",
+              "childNode": [
+                {
+                  "title": "Complaint Management System",
+                  "description": "Workflow Description Goes Here",
+                  "system": "Complain Management",
+                  "stepType": "/v1/endpointname",
+                  "params": [
+                    "channel",
+                    "source",
+                    "param2"
+                  ],
+                  "node": "integration-node",
+                  "childNode": []
+                }
+              ]
+            },
+            {
+              "title": "Disputes",
+              "description": "Workflow Description Goes Here",
+              "node": "logical-node",
+              "childNode": [
+                {
+                  "title": "IM Database",
+                  "description": "Workflow Description Goes Here",
+                  "system": "IM Database",
+                  "stepType": "/v1/endpointname",
+                  "params": [
+                    "channel",
+                    "source",
+                    "param2"
+                  ],
+                  "node": "integration-node",
+                  "childNode": [{
+                    "title": "Qualification Step",
+                    "description": "Workflow Description Goes Here",
+                    "users": [
+                      {
+                        "name": "John Doe",
+                        "avatar": {
+                          "alt": "John Doe",
+                          "src": "https://i.pravatar.cc/14"
+                        }
+                      },
+                      {
+                        "name": "Sarahh",
+                        "avatar": {
+                          "alt": "Sarah",
+                          "src": "https://i.pravatar.cc/19"
+                        }
+                      },
+                      {
+                        "name": "Bob Smith",
+                        "avatar": {
+                          "alt": "Bob Smith",
+                          "src": "https://i.pravatar.cc/30"
+                        }
+                      }
+                    ],
+                    "node": "user-node",
+                    "childNode": [{
+                      "title": "Qualification Step",
+                      "description": "Workflow Description Goes Here",
+                      "users": [
+                        {
+                          "name": "John Doe",
+                          "avatar": {
+                            "alt": "John Doe",
+                            "src": "https://i.pravatar.cc/1"
+                          }
+                        },
+                        {
+                          "name": "Sarahh",
+                          "avatar": {
+                            "alt": "Sarah",
+                            "src": "https://i.pravatar.cc/2"
+                          }
+                        },
+                        {
+                          "name": "Bob Smith",
+                          "avatar": {
+                            "alt": "Bob Smith",
+                            "src": "https://i.pravatar.cc/3"
+                          }
+                        }
+                      ],
+                      "node": "user-node",
+                      "childNode": []
+                      }]
+                    }]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]

@@ -56,9 +56,16 @@ export default function HomeScreen() {
   ) : (
     <ThemedView style={styles.container}>
       {complaints?.length === 0 ? (
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText type="title">Welcome!</ThemedText>
-        </ThemedView>
+        <>
+          <ThemedView style={styles.titleContainer}>
+            <ThemedText type="title">Welcome!</ThemedText>
+          </ThemedView>
+          <ThemedView style={styles.bodyContainer}>
+            <ThemedText type="body">
+              No Complaints Found. For Adding New Complaint Press + Icon on Top Right Corner.
+            </ThemedText>
+          </ThemedView>
+        </>
       ) : (
         <ScrollView style={{height: '100%', width: '100%'}}>
           {complaints?.map(item => (
@@ -86,6 +93,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  bodyContainer: {
+    paddingVertical: 5,
+    paddingHorizontal: 20,
   },
   subContainer: {
     flex: 1,

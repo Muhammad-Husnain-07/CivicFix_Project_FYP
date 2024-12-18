@@ -1,47 +1,113 @@
 {
-  "name": "project",
-  "version": "0.1.0",
+  "name": "civicfix",
+  "version": "4.6.0",
+  "homepage": ".",
+  "description": "Dispute Management System",
+  "author": "Timestream Group",
   "private": true,
-  "dependencies": {
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "bootstrap": "^5.3.3",
-    "react": "^18.3.1",
-    "react-bootstrap": "^2.10.5",
-    "react-bootstrap-table-next": "^4.0.3",
-    "react-dom": "^18.3.1",
-    "react-icons": "^5.3.0",
-    "react-router-dom": "^6.28.0",
-    "react-scripts": "5.0.1",
-    "recharts": "^2.13.0",
-    "web-vitals": "^2.1.4"
-  },
+  "type": "module",
+  "license": "https://mui.com/store/license/",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "vite",
+    "build": "vite build",
+    "serve": "vite preview",
+    "lint": "eslint src --ext .js,.jsx --fix"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "browserslist": [
+    "> 0.5%",
+    "last 2 versions",
+    "Firefox ESR",
+    "not dead",
+    "not IE 11"
+  ],
+  "dependencies": {
+    "@auth0/auth0-spa-js": "1.22.6",
+    "@babel/plugin-proposal-private-property-in-object": "7.21.11",
+    "@babel/plugin-transform-private-property-in-object": "7.24.5",
+    "@date-io/date-fns": "2.17.0",
+    "@emotion/cache": "11.11.0",
+    "@emotion/react": "11.11.4",
+    "@emotion/server": "11.11.0",
+    "@emotion/styled": "11.11.5",
+    "@faker-js/faker": "7.6.0",
+    "@fullcalendar/core": "6.1.11",
+    "@fullcalendar/daygrid": "6.1.11",
+    "@fullcalendar/interaction": "6.1.11",
+    "@fullcalendar/react": "6.1.11",
+    "@mui/icons-material": "5.15.18",
+    "@mui/lab": "5.0.0-alpha.170",
+    "@mui/material": "5.15.18",
+    "@mui/system": "5.15.15",
+    "@mui/x-data-grid": "6.19.11",
+    "@mui/x-date-pickers": "6.19.12",
+    "@react-jvectormap/core": "1.0.4",
+    "@react-jvectormap/unitedstates": "1.0.1",
+    "@react-jvectormap/world": "1.1.2",
+    "@redux-devtools/extension": "3.3.0",
+    "@reduxjs/toolkit": "1.9.7",
+    "@svgr/rollup": "8.1.0",
+    "@vitejs/plugin-react-swc": "3.6.0",
+    "amazon-cognito-identity-js": "5.2.14",
+    "animate.css": "4.1.1",
+    "apexcharts": "3.49.1",
+    "axios": "0.28.1",
+    "axios-mock-adapter": "1.22.0",
+    "buffer": "6.0.3",
+    "chart.js": "4.4.3",
+    "crypto-browserify": "3.12.0",
+    "css-vendor": "2.0.8",
+    "date-fns": "2.30.0",
+    "deepmerge": "4.3.1",
+    "firebase": "8.10.1",
+    "formik": "2.4.6",
+    "google-map-react": "2.2.1",
+    "history": "5.3.0",
+    "i18next": "22.5.1",
+    "jsonwebtoken": "8.5.1",
+    "jss": "10.10.0",
+    "jwt-decode": "3.1.2",
+    "leaflet": "^1.9.4",
+    "lucide-react": "0.379.0",
+    "mui-datatables": "^4.3.0",
+    "polished": "4.3.1",
+    "process": "0.11.10",
+    "react": "18.3.1",
+    "react-apexcharts": "1.4.1",
+    "react-app-polyfill": "3.0.0",
+    "react-beautiful-dnd": "13.1.1",
+    "react-chartjs-2": "5.2.0",
+    "react-dom": "18.3.1",
+    "react-helmet-async": "1.3.0",
+    "react-i18next": "12.3.1",
+    "react-json-formatter": "^0.4.0",
+    "react-json-pretty": "^2.2.0",
+    "react-leaflet": "^4.2.1",
+    "react-quill": "2.0.0",
+    "react-redux": "8.1.3",
+    "react-router-dom": "6.23.1",
+    "react-syntax-highlighter": "15.5.0",
+    "redux": "4.2.1",
+    "redux-thunk": "2.4.2",
+    "stream-browserify": "3.0.0",
+    "util": "0.12.5",
+    "vite": "5.2.11",
+    "vite-plugin-node-polyfills": "0.22.0",
+    "web-vitals": "3.5.2",
+    "yup": "1.4.0"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+    "@babel/preset-env": "7.24.5",
+    "babel-plugin-direct-import": "1.0.0",
+    "eslint": "8.57.0",
+    "eslint-config-prettier": "8.10.0",
+    "eslint-plugin-prettier": "4.2.1",
+    "eslint-plugin-react": "7.34.1",
+    "eslint-plugin-react-hooks": "4.6.2",
+    "prettier": "2.8.8"
+  },
+  "overrides": {
+    "vite-plugin-node-polyfills": {
+      "vite": "5.2.11"
+    }
   }
 }

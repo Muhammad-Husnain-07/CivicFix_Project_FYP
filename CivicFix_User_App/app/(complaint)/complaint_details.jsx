@@ -11,6 +11,7 @@ import {ThemedDropdown} from '@/components/ThemedDropdown';
 import {getData} from '@/hooks/useLocalStorage';
 import Loader from '@/components/Loader';
 import Map from '@/components/Map';
+import {ThemedText} from '@/components/ThemedText';
 
 const ViewMap = ({setLocation, onSubmit}) => {
   const [pickedLocation, setPickedLocation] = useState(null);
@@ -147,6 +148,11 @@ export default ComplaintDetailScreen = () => {
     <ViewMap setLocation={setLocation} onSubmit={handleSubmitComplaint} />
   ) : (
     <ThemedView style={styles.container}>
+      <ThemedView style={{padding: 10}}>
+        <ThemedText type="heading5">
+          Your complaint will be routed to the {params?.complaint_class} department. Please provide the necessary details.
+        </ThemedText>
+      </ThemedView>
       <ThemedView style={styles.fieldContainer}>
         <ThemedDropdown
           data={categoryOptions}
