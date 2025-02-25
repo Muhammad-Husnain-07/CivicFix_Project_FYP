@@ -1,14 +1,54 @@
+import axios from 'axios';
+import {Link, useNavigation} from 'expo-router';
+import React, {useState} from 'react';
+import {StyleSheet} from 'react-native';
 import {ThemedButton} from '@/components/ThemedButton';
 import {ThemedText} from '@/components/ThemedText';
 import ThemedTextField from '@/components/ThemedTextField';
 import {ThemedView} from '@/components/ThemedView';
-import {Link, useNavigation} from 'expo-router';
-import React from 'react';
-import {StyleSheet} from 'react-native';
+import {storeData} from '@/hooks/useLocalStorage';
+import Loader from '@/components/Loader';
+
+const BASE_URL = process.env.EXPO_PUBLIC_WEB_BASE_URL;
 
 export default LoginScreen = () => {
   const navigation = useNavigation();
-  return (
+
+  const [loader, setLoader] = useState(false);
+  const [credentials, setCredentials] = useState({
+    username: '',
+    password: '',
+  });
+
+  const handleLogin = async values => {
+    const body = {
+      data: {
+        cnic: values.username,
+        password: values.password,
+      },
+    };
+    try {
+      setLoader(true);
+      await axios
+        .post(BASE_URL + '/user/login', body, {
+          headers: {'Content-Type': 'application/json'},
+        })
+        .then(res => {
+          const user = res.data.data;
+          storeData('access_token', user.access_token);
+          storeData('refresh_token', user.refresh_token);
+          storeData('user_data', user);
+          navigation.reset({index: 0, routes: [{name: '(drawer)'}]});
+          setLoader(false);
+        });
+    } catch (err) {
+      setLoader(false);
+      console.log(err);
+    }
+  };
+  return  loader ? (
+    <Loader />
+  ) : (
     <ThemedView style={styles.container}>
       <ThemedView style={{display: 'flex', flexDirection: 'row'}}>
         <ThemedText type="title">CivicFix</ThemedText>
@@ -16,18 +56,24 @@ export default LoginScreen = () => {
       </ThemedView>
       <ThemedView style={styles.subContainer}>
         <ThemedView style={styles.fieldContainer}>
-          <ThemedTextField placeholder="User Name" style={styles.fieldStyling} />
+          <ThemedTextField placeholder="User Name" style={styles.fieldStyling}  onChangeText={text =>
+              setCredentials(prevState => {
+                return {...prevState, username: text};
+              })
+            } />
         </ThemedView>
         <ThemedView style={styles.fieldContainer}>
-          <ThemedTextField placeholder="Password" style={styles.fieldStyling} />
+          <ThemedTextField placeholder="Password" style={styles.fieldStyling}  onChangeText={text =>
+              setCredentials(prevState => {
+                return {...prevState, password: text};
+              })
+            } />
         </ThemedView>
         <ThemedView style={styles.buttonContainer}>
           <ThemedButton
             type="outlined"
             title="Login"
-            onPress={() => {
-              navigation.reset({index: 0, routes: [{name: '(drawer)'}]});
-            }}
+            onPress={() => handleLogin(credentials)}
             style={styles.buttonStyling}
           />
         </ThemedView>

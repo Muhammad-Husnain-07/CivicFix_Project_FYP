@@ -17,8 +17,6 @@ function SignIn() {
   return (
     <React.Fragment>
       <Helmet title="Sign In" />
-      <BigAvatar alt="Avatar" src="/static/img/avatars/olivier.jpg" />
-
       <Typography component="h1" variant="h3" align="center" gutterBottom>
         CivicFix Admin Panel
       </Typography>
