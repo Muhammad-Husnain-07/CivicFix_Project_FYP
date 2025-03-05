@@ -1,43 +1,91 @@
-import React, {useState} from 'react';
-import {StyleSheet, Image} from 'react-native';
-import {Picker} from '@react-native-picker/picker';
-import * as ImagePicker from 'expo-image-picker';
+import React, {useEffect, useState} from 'react';
+import * as FileSystem from 'expo-file-system';
+import {StyleSheet, Image, ToastAndroid} from 'react-native';
 import {ThemedView} from '@/components/ThemedView';
 import ThemedTextField from '@/components/ThemedTextField';
 import {ThemedButton} from '@/components/ThemedButton';
 import {ThemedText} from '@/components/ThemedText';
 import {ThemedDropdown} from '@/components/ThemedDropdown';
-import { useNavigation } from 'expo-router';
+import {useLocalSearchParams, useNavigation} from 'expo-router';
+import apiClient from '@/utils/axiosConfig';
+import Camera from '@/components/Camera';
 
 const ComplaintForm = () => {
   const navigation = useNavigation();
   const [status, setStatus] = useState('');
   const [note, setNote] = useState('');
   const [image, setImage] = useState(null);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
   const statusOptions = [
-    {label: 'Closed', value: 'Closed'},
-    {label: 'Resolved', value: 'Resolved'},
+    {label: 'Closed', value: 'CLOSED'},
+    {label: 'Resolved', value: 'COMPLETED'},
   ];
-  const handleImagePick = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 1,
-    });
+  const [openCamera, setOpenCamera] = useState(false);
+  const params = useLocalSearchParams();
 
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
+  const handleSubmit = async () => {
+    if (!note) {
+      setError('Please enter a note');
+      return;
+    }
+
+    if (!status) {
+      setError('Please select a status');
+      return;
+    }
+    if(!image) {
+      setError('Please upload proof image');
+      return;
+    }
+    let uploadImage = null;
+    if (image) {
+      try {
+        const base64Image = await FileSystem.readAsStringAsync(image, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+
+        // Replace the image with the base64 version in the request body
+        uploadImage = base64Image;
+      } catch (error) {
+        setError('Error reading image file');
+        console.error('Error reading image file:', error);
+        return;
+      }
+    }
+
+    try {
+      await apiClient.post('proof-of-resolution', {
+        proof_description: note,
+        complaint_id: params?.complaint_id,
+        resolved_status: status,
+        status: status === 'COMPLETED' ? 'RESOLVED' : 'CLOSED',
+        proof_image: uploadImage,
+      });
+      setSuccess(true);
+      navigation.reset({index: 0, routes: [{name: '(drawer)'}]});
+    } catch (err) {
+      setError('Error submitting proof of resolution');
+      console.error('Error submitting proof of resolution:', err.message);
     }
   };
 
-  const handleSubmit = () => {
-    // Handle submit logic here
-    console.log('Submitted:', {note, status, image});
-    navigation.navigate('(drawer)');
-  };
+  useEffect(() => {
+    if (error) {
+      ToastAndroid.show(error, ToastAndroid.SHORT);
+      setError(null);
+    }
+    if (success) {
+      ToastAndroid.show('Proof of resolution submitted successfully', ToastAndroid.SHORT);
+      setSuccess(false);
+    }
+  }, [error, success]);
 
-  return (
+  return openCamera ? (
+    <Camera onSubmit={(photo) => {console.log('photo', photo); setImage(photo); setOpenCamera(false);}} />
+  ) : (
     <ThemedView style={styles.container}>
+       {image && <Image source={{uri: image}} style={styles.imagePreview} />}
       <ThemedView>
         <ThemedText style={styles.label}>Note</ThemedText>
         <ThemedTextField
@@ -58,9 +106,8 @@ const ComplaintForm = () => {
           />
         </ThemedView>
       </ThemedView>
-      {image && <Image source={{uri: image}} style={styles.imagePreview} />}
       <ThemedView style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-        <ThemedButton title="Upload Resolved Issue Image" onPress={handleImagePick} />
+        <ThemedButton title="Upload Resolved Issue Image" onPress={() => setOpenCamera(true)} />
         <ThemedButton title="Submit" onPress={handleSubmit} />
       </ThemedView>
     </ThemedView>
@@ -98,3 +145,4 @@ const styles = StyleSheet.create({
 });
 
 export default ComplaintForm;
+

@@ -1,8 +1,9 @@
 import {getData, storeData} from '@/hooks/useLocalStorage';
 import axios from 'axios';
+import { URL } from './baseURL';
 
 // Automatically determine the server IP
-const BASE_URL = `${process.env.EXPO_PUBLIC_WEB_BASE_URL}`; // Default port is 8000, adjust if needed
+const BASE_URL = URL; // Default port is 8000, adjust if needed
 
 // Create Axios instance
 const apiClient = axios.create({
@@ -26,7 +27,7 @@ apiClient.interceptors.request.use(async config => {
 
 // Request interceptor
 const refreshToken = async error => {
-  if (error.response.status === 401 && error.config && !error.config.__isRetryRequest) {
+  if (error.response?.status === 401 && error.config && !error.config.__isRetryRequest) {
     error.config.__isRetryRequest = true;
     try {
       const refreshToken = await getData('refresh_token');

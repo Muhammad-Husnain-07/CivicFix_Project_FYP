@@ -1,14 +1,29 @@
+import {ToastAndroid} from 'react-native';
 import {ThemedButton} from '@/components/ThemedButton';
 import {ThemedText} from '@/components/ThemedText';
 import ThemedTextField from '@/components/ThemedTextField';
 import {ThemedView} from '@/components/ThemedView';
 import {Link, useNavigation} from 'expo-router';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet} from 'react-native';
 
 export default RegisterScreen = () => {
   const navigation = useNavigation();
   const [cnic, setCnic] = useState('');
+
+  const validateCnic = () => {
+    if (!cnic) {
+      ToastAndroid.show('Please enter CNIC', ToastAndroid.SHORT);
+      return false;
+    }
+    const cnicRegex = /^[0-9]{13}$/;
+    if (!cnicRegex.test(cnic)) {
+      ToastAndroid.show('CNIC must be a 13 digit number', ToastAndroid.SHORT);
+      return false;
+    }
+    return true;
+  };
+
 
   return (
     <ThemedView style={styles.container}>
@@ -27,14 +42,16 @@ export default RegisterScreen = () => {
           <ThemedButton
             type="outlined"
             title="Register"
-            onPress={() =>
-              navigation.navigate('(auth)', {
-                screen: 'user_info',
-                params: {
-                  cnic: cnic,
-                },
-              })
-            }
+            onPress={() => {
+              if (validateCnic()) {
+                navigation.navigate('(auth)', {
+                  screen: 'user_info',
+                  params: {
+                    cnic: cnic,
+                  },
+                });
+              }
+            }}
             style={styles.buttonStyling}
           />
         </ThemedView>

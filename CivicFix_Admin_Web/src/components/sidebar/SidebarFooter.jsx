@@ -4,8 +4,6 @@ import styled from "@emotion/styled";
 import { Badge, Grid, Avatar, Typography } from "@mui/material";
 import { green } from "@mui/material/colors";
 
-import useAuth from "../../hooks/useAuth";
-
 const Footer = styled.div`
   background-color: ${(props) =>
     props.theme.sidebar.footer.background} !important;
@@ -37,8 +35,6 @@ const FooterBadge = styled(Badge)`
 `;
 
 const SidebarFooter = ({ ...rest }) => {
-  const { user } = useAuth();
-
   return (
     <Footer {...rest}>
       <Grid container spacing={2}>
@@ -51,22 +47,11 @@ const SidebarFooter = ({ ...rest }) => {
             }}
             variant="dot"
           >
-            {!!user && <Avatar alt={user.displayName} src={user.avatar} />}
-            {/* Demo data */}
-            {!user && (
-              <Avatar
-                alt="Saleem"
-                src="/static/img/avatars/olivier.jpg"
-              />
-            )}
+            <Avatar alt={"Admin"} src="/static/img/avatars/avatar-2.jpg" />
           </FooterBadge>
         </Grid>
         <Grid item>
-          {!!user && (
-            <FooterText variant="body2">{user.displayName}</FooterText>
-          )}
-          {/* Demo data */}
-          {!user && <FooterText variant="body2">Muhammad Husnain</FooterText>}
+          <FooterText variant="body2">Muhammad Husnain</FooterText>
           <FooterSubText variant="caption">Administrator</FooterSubText>
         </Grid>
       </Grid>

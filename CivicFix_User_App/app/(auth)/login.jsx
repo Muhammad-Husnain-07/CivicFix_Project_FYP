@@ -1,15 +1,17 @@
+import {Feather} from '@expo/vector-icons';
 import axios from 'axios';
 import {Link, useNavigation} from 'expo-router';
 import React, {useState} from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, ToastAndroid, TouchableOpacity} from 'react-native';
 import {ThemedButton} from '@/components/ThemedButton';
 import {ThemedText} from '@/components/ThemedText';
 import ThemedTextField from '@/components/ThemedTextField';
 import {ThemedView} from '@/components/ThemedView';
 import {storeData} from '@/hooks/useLocalStorage';
 import Loader from '@/components/Loader';
+import {URL} from '@/utils/baseURL';
 
-const BASE_URL = process.env.EXPO_PUBLIC_WEB_BASE_URL;
+const BASE_URL = URL;
 
 export default LoginScreen = () => {
   const navigation = useNavigation();
@@ -18,8 +20,19 @@ export default LoginScreen = () => {
     cnic: '',
     password: '',
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async values => {
+    if (!values.cnic || !values.password) {
+      ToastAndroid.show('Please enter CNIC and Password', ToastAndroid.SHORT);
+      return;
+    }
+
+    const cnicRegex = /^[0-9]{13}$/;
+    if (!cnicRegex.test(values.cnic)) {
+      ToastAndroid.show('CNIC must be a 13 digit number', ToastAndroid.SHORT);
+      return;
+    }
     const body = {
       data: {
         cnic: values.cnic,
@@ -42,7 +55,7 @@ export default LoginScreen = () => {
         });
     } catch (err) {
       setLoader(false);
-      console.log(err);
+      ToastAndroid.show(err.message, ToastAndroid.SHORT);
     }
   };
 
@@ -73,7 +86,23 @@ export default LoginScreen = () => {
                 return {...prevState, password: text};
               })
             }
+            secureTextEntry={!showPassword}
           />
+        </ThemedView>
+        <ThemedView style={{display: 'flex'}}>
+          <TouchableOpacity
+            style={{flexDirection: 'row', gap: 5, marginRight: '50%'}}
+            onPress={() => setShowPassword(prev => !prev)}
+          >
+            <Feather
+              name={showPassword ? 'check-square' : 'square'}
+              size={24}
+              color={showPassword ? 'green' : 'white'}
+            />
+            <ThemedText style={{textAlign: 'left'}}>
+              {showPassword ? 'Hide' : 'Show'} Password
+            </ThemedText>
+          </TouchableOpacity>
         </ThemedView>
         <ThemedView style={styles.buttonContainer}>
           <ThemedButton
@@ -120,6 +149,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingBlock: 5,
+    marginTop: 10,
   },
   linkContainer: {
     alignItems: 'center',
@@ -142,3 +172,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+

@@ -14,8 +14,6 @@ import {
 } from "@mui/material";
 import { spacing } from "@mui/system";
 
-import useAuth from "../../hooks/useAuth";
-
 const IconButton = styled(MuiIconButton)(spacing);
 
 const AvatarBadge = styled(Badge)`
@@ -32,7 +30,6 @@ const AvatarBadge = styled(Badge)`
 function NavbarUserDropdown() {
   const [anchorMenu, setAnchorMenu] = React.useState(null);
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
 
   const toggleMenu = (event) => {
     setAnchorMenu(event.currentTarget);
@@ -43,7 +40,9 @@ function NavbarUserDropdown() {
   };
 
   const handleSignOut = async () => {
-    await signOut();
+    const theme = localStorage.getItem("theme");
+    localStorage.clear();
+    localStorage.setItem("theme", theme);
     navigate("/");
   };
 
@@ -66,14 +65,7 @@ function NavbarUserDropdown() {
             }}
             variant="dot"
           >
-            {!!user && <Avatar alt={user.displayName} src={user.avatar} />}
-            {/* Demo data */}
-            {!user && (
-              <Avatar
-                alt="Muhammad Husnain"
-                src="/static/img/avatars/olivier.jpg"
-              />
-            )}
+            <Avatar alt={"Admin"} src="/static/img/avatars/avatar-2.jpg" />
           </AvatarBadge>
         </IconButton>
       </Tooltip>
@@ -83,10 +75,6 @@ function NavbarUserDropdown() {
         open={Boolean(anchorMenu)}
         onClose={closeMenu}
       >
-        <MenuItem onClick={closeMenu}>Profile</MenuItem>
-        <MenuItem onClick={closeMenu}>Settings & Privacy</MenuItem>
-        <Divider />
-        <MenuItem onClick={closeMenu}>Help</MenuItem>
         <MenuItem onClick={handleSignOut}>Sign out</MenuItem>
       </Menu>
     </React.Fragment>

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import {StyleSheet} from 'react-native';
+import React, {useState} from 'react';
+import {StyleSheet, ToastAndroid} from 'react-native';
 import {ThemedButton} from '@/components/ThemedButton';
 import ThemedTextField from '@/components/ThemedTextField';
 import {ThemedView} from '@/components/ThemedView';
@@ -9,9 +9,94 @@ import apiClient from '@/utils/axiosConfig';
 export default UserInfoScreen = () => {
   const navigation = useNavigation();
   const params = useLocalSearchParams();
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState({
+    name: '',
+    father_name: '',
+    cnic: params.cnic,
+    address: '',
+    phone: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+
+  const [error, setError] = useState(null);
+
+  const showError = error => {
+    if (error) {
+      ToastAndroid.show(Object.values(error)[0], ToastAndroid.SHORT);
+    }
+  };
+
+  const validate = () => {
+    if (
+      !user.name ||
+      !user.father_name ||
+      !user.cnic ||
+      !user.address ||
+      !user.phone ||
+      !user.email ||
+      !user.password ||
+      !user.confirmPassword
+    ) {
+      setError({allFields: 'All fields are required'});
+      return false;
+    } else if (!user.name) {
+      setError({name: 'Name is required'});
+      return false;
+    } else if (!/^[a-zA-Z\s]+$/i.test(user.name)) {
+      setError({name: 'Name must contain alphabets only'});
+      return false;
+    }
+
+    if (!user.father_name) {
+      setError({father_name: 'Father Name is required'});
+      return false;
+    } else if (!/^[a-zA-Z\s]+$/i.test(user.father_name)) {
+      setError({father_name: 'Father Name must contain alphabets only'});
+      return false;
+    }
+
+    if (!user.address) {
+      setError({address: 'Address is required'});
+      return false;
+    }
+
+    if (!user.phone) {
+      setError({phone: 'Contact Number is required'});
+      return false;
+    } else if (!/^[0-9]{11}$/.test(user.phone)) {
+      setError({phone: 'Invalid Contact Number'});
+      return false;
+    }
+
+    if (!user.email) {
+      setError({email: 'Email is required'});
+      return false;
+    } else if (!/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/.test(user.email)) {
+      setError({email: 'Invalid Email'});
+      return false;
+    }
+
+    if (!user.password) {
+      setError({password: 'Password is required'});
+      return false;
+    }
+
+    if (user.password !== user.confirmPassword) {
+      setError({confirmPassword: 'Passwords do not match'});
+      return false;
+    }
+
+    setError(null);
+    return true;
+  };
 
   const registerUser = async () => {
+    if (!validate()) {
+      showError(error);
+      return;
+    }
     const body = {
       data: {
         name: user.name,
@@ -21,19 +106,17 @@ export default UserInfoScreen = () => {
         phone: user.phone,
         email: user.email,
         password: user.password,
-        role: 'User',
       },
     };
     try {
-      await apiClient.post('/users/register', body).then(res => {
-        if (res?.message?.status === 200) {
-          navigation.reset({index: 0, routes: [{name: 'login'}]});
-        }
-      });
+      const res = await apiClient.post('/users/register', body);
+      if (res?.data?.status === 200) {
+        ToastAndroid.show('User registered successfully', ToastAndroid.SHORT);
+        navigation.reset({index: 0, routes: [{name: 'login'}]});
+      }
     } catch (err) {
-      alert(err);
+      ToastAndroid.show(err?.response?.data?.message, ToastAndroid.SHORT);
       console.log(err);
-      navigation.reset({index: 0, routes: [{name: 'register'}]});
     }
   };
   return (
@@ -44,7 +127,7 @@ export default UserInfoScreen = () => {
             <ThemedTextField
               placeholder="Name"
               style={styles.fieldStyling}
-              value={user?.name}
+              value={user.name}
               onChangeText={text => setUser({...user, name: text})}
             />
           </ThemedView>
@@ -52,7 +135,7 @@ export default UserInfoScreen = () => {
             <ThemedTextField
               placeholder="Father Name"
               style={styles.fieldStyling}
-              value={user?.father_name}
+              value={user.father_name}
               onChangeText={text => setUser({...user, father_name: text})}
             />
           </ThemedView>
@@ -60,7 +143,7 @@ export default UserInfoScreen = () => {
             <ThemedTextField
               placeholder="Email"
               style={styles.fieldStyling}
-              value={user?.email}
+              value={user.email}
               onChangeText={text => setUser({...user, email: text})}
             />
           </ThemedView>
@@ -68,7 +151,7 @@ export default UserInfoScreen = () => {
             <ThemedTextField
               placeholder="Contact Number"
               style={styles.fieldStyling}
-              value={user?.phone}
+              value={user.phone}
               onChangeText={text => setUser({...user, phone: text})}
             />
           </ThemedView>
@@ -76,7 +159,7 @@ export default UserInfoScreen = () => {
             <ThemedTextField
               placeholder="Address"
               style={styles.fieldStyling}
-              value={user?.address}
+              value={user.address}
               onChangeText={text => setUser({...user, address: text})}
             />
           </ThemedView>
@@ -84,7 +167,7 @@ export default UserInfoScreen = () => {
             <ThemedTextField
               placeholder="Password"
               style={styles.fieldStyling}
-              value={user?.password}
+              value={user.password}
               onChangeText={text => setUser({...user, password: text})}
             />
           </ThemedView>
@@ -92,7 +175,7 @@ export default UserInfoScreen = () => {
             <ThemedTextField
               placeholder="Confirm Password"
               style={styles.fieldStyling}
-              value={user?.password}
+              value={user.confirmPassword}
               onChangeText={text => setUser({...user, confirmPassword: text})}
             />
           </ThemedView>

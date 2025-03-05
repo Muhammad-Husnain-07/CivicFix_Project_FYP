@@ -8,27 +8,18 @@ import {
   Typography as MuiTypography,
   Box as MuiBox,
   Card as MuiCard,
-  CardContent,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { green, red } from "@mui/material/colors";
 import Actions from "./Actions";
-import BarChart from "./BarChart";
-import LineChart from "./LineChart";
 import Stats from "./Stats";
-import Table from "./Table";
-import MiniTable from "./MiniTable";
 import PieChart from "./PieChart";
 import MultiAxisLineChart from "./MultiAxisLineChart";
-import MapComponent from "./MapComponent";
-import axios from "axios";
 import Loader from "../../../components/Loader";
 import StackedBarChart from "./StackedBarChart";
-
+import apiClient from "../../../utils/axiosConfig";
 const Divider = styled(MuiDivider)(spacing);
 const Typography = styled(MuiTypography)(spacing);
 
-const TotalCard = styled(MuiCard)(spacing);
 `
   text-align: center;
   background-color: ${(props) => rgba(props.theme.palette.primary.main, 0.25)};
@@ -45,35 +36,12 @@ function SNGPL({ theme }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        //const url = `https://resolvex-api.graymushroom-01823765.uksouth.azurecontainerapps.io/api/charts/disputes-stats`;
-        //const response = await axios.post(url, { timeframe: filter.value });
-        //const allStats = response.data;
-        setStatsData([
-          {
-            title: "Reported",
-            count: 91,
-            chip: filter?.value,
-            percentagetext: "0%",
-          },
-          {
-            title: "In Progress",
-            count: 117,
-            chip: filter?.value,
-            percentagetext: "0%",
-          },
-          {
-            title: "Resolved",
-            count: 26,
-            chip: filter?.value,
-            percentagetext: "0%",
-          },
-          {
-            title: "Closed",
-            count: 64,
-            chip: filter?.value,
-            percentagetext: "0%",
-          },
-        ]);
+        const data = await apiClient(
+          "/complaints/stats?filter=" + filter.value + "&department=SNGPL"
+        );
+        if (data) {
+          setStatsData(data);
+        }
       } catch (error) {
         setStatsData([]);
         console.error("Error fetching the chart data", error);
@@ -82,6 +50,7 @@ function SNGPL({ theme }) {
 
     fetchData();
   }, [filter, theme]);
+
   return (
     <React.Fragment>
       <Helmet title="SNGPL Dashboard" />
@@ -101,19 +70,15 @@ function SNGPL({ theme }) {
       <Grid container spacing={6} mb={6}>
         {statsData ? (
           <>
-            {statsData.map((item, index) => (
+            {statsData?.length > 0 && statsData?.map((item, index) => (
               <Grid key={index} item xs={12} sm={12} md={3} lg={3} xl={3}>
                 <Stats
                   title={item.title}
-                  amount={item.count ? item.count : "-"}
+                  amount={item.count ??  "-"}
                   chip={
                     filter?.value === item.chip
                       ? filter?.label
                       : item.chip ?? "-"
-                  }
-                  percentagetext={item.percentagetext}
-                  percentagecolor={
-                    item.percentagetext?.includes("-") ? red[500] : green[500]
                   }
                 />
               </Grid>
@@ -131,9 +96,6 @@ function SNGPL({ theme }) {
         </Grid>
       </Grid>
       <Grid container spacing={6} mb={10}>
-        {/* <Grid item xs={12} sm={12} md={4} lg={3} xl={3}>
-          <MiniTable filter={filter?.value} />
-        </Grid> */}
         <Grid item xs={12} sm={12} md={5} lg={5} xl={5}>
           <PieChart filter={filter?.value} />
         </Grid>

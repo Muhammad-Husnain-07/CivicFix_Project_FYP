@@ -34,7 +34,7 @@ ALLOWED_HOSTS = []
 
 # Custom settings
 SIMPLE_JWT = {
-    'USER_ID_FIELD': 'user_id',  # Use `user_id` as the primary key field
+    'USER_ID_FIELD': 'id',  # Use `id` as the primary key field
     'REQUIRED_FIELDS': [],  # No additional fields are required
 }
 

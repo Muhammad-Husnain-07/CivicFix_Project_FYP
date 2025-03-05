@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -8,20 +8,19 @@ import {
   IconButton,
   Grid,
   Button,
+  MenuItem,
+  Autocomplete,
 } from "@mui/material";
 import { X } from "lucide-react";
+import apiClient from "../../utils/axiosConfig";
 
-const TeamModal = ({ openModal, handleCloseModal }) => {
-  const [state, setState] = React.useState({
-    group: "",
-    department: "",
-    title: "",
-    employeeId: "",
-    region: "",
-    location: "",
+const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
+  const [isUpdate, setIsUpdate] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [availableUsers, setAvailableUsers] = useState([]);
+  const [state, setState] = useState({
     name: "",
-    supervisor: "",
-    email: "",
+    team_members: [],
   });
 
   const handleChange = (event) => {
@@ -32,9 +31,81 @@ const TeamModal = ({ openModal, handleCloseModal }) => {
   };
 
   const handleSubmitForm = () => {
-    handleClose();
+    const dataToSubmit = { ...state };
+    console.log(dataToSubmit);
+    try {
+      if (isUpdate) {
+        apiClient
+          .put(`/team/${rowData.id}/update`, dataToSubmit)
+          .then(() => {
+            getTeamUsers();
+            handleCloseModal();
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      } else {
+        apiClient
+          .post("/team/create", {
+            ...dataToSubmit,
+            department: localStorage.getItem("department_id"),
+          })
+          .then(() => {
+            getTeamUsers();
+            handleCloseModal();
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
+  useEffect(() => {
+    if (rowData) {
+      setIsUpdate(true);
+      setState(rowData);
+    } else {
+      setIsUpdate(false);
+      setState({
+        name: "",
+        department: null,
+        team_members: [],
+      });
+    }
+  }, [rowData]);
+
+  useEffect(() => {
+    const getUsers = async () => {
+      try {
+        const response = await apiClient.get("/teamusers");
+        const data = response;
+        if (data) {
+          setUsers(data);
+        }
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      }
+    };
+    const getAvailableUsers = async () => {
+      try {
+        const response = await apiClient.get("/teamusers-available");
+        const data = response;
+        if (data) {
+          setAvailableUsers(data);
+        }
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      }
+    };
+    getUsers();
+    getAvailableUsers();
+  }, []);
+  const userOptions = availableUsers
+    .filter((user) => user.department == localStorage.getItem("department_id"))
+    .map(({ id, name }) => ({ label: name, value: id }));
   return (
     <Dialog open={openModal} onClose={handleCloseModal}>
       <DialogTitle>
@@ -44,7 +115,7 @@ const TeamModal = ({ openModal, handleCloseModal }) => {
           alignItems="center"
           justifyContent="space-between"
         >
-          <Grid item>Add User</Grid>
+          <Grid item>{isUpdate ? "Edit Team" : "Add Team"}</Grid>
           <Grid item>
             <IconButton aria-label="close" onClick={handleCloseModal}>
               <X />
@@ -53,104 +124,54 @@ const TeamModal = ({ openModal, handleCloseModal }) => {
         </Grid>
       </DialogTitle>
       <DialogContent>
-        <TextField
-          autoFocus
-          margin="dense"
-          id="group"
-          label="Group"
-          type="text"
-          fullWidth
-          name="group"
-          value={state.group}
-          onChange={handleChange}
-        />
-        <TextField
-          margin="dense"
-          id="department"
-          label="Department"
-          type="text"
-          fullWidth
-          name="department"
-          value={state.department}
-          onChange={handleChange}
-        />
-        <TextField
-          margin="dense"
-          id="title"
-          label="Title"
-          type="text"
-          fullWidth
-          name="title"
-          value={state.title}
-          onChange={handleChange}
-        />
-        <TextField
-          margin="dense"
-          id="employeeId"
-          label="Employee ID"
-          type="text"
-          fullWidth
-          name="employeeId"
-          value={state.employeeId}
-          onChange={handleChange}
-        />
-        <TextField
-          margin="dense"
-          id="region"
-          label="Region"
-          type="text"
-          fullWidth
-          name="region"
-          value={state.region}
-          onChange={handleChange}
-        />
-        <TextField
-          margin="dense"
-          id="location"
-          label="Location"
-          type="text"
-          fullWidth
-          name="location"
-          value={state.location}
-          onChange={handleChange}
-        />
-        <TextField
-          margin="dense"
-          id="name"
-          label="Name"
-          type="text"
-          fullWidth
-          name="name"
-          value={state.name}
-          onChange={handleChange}
-        />
-        <TextField
-          margin="dense"
-          id="supervisor"
-          label="Supervisor"
-          type="text"
-          fullWidth
-          name="supervisor"
-          value={state.supervisor}
-          onChange={handleChange}
-        />
-        <TextField
-          margin="dense"
-          id="email"
-          label="Email Address"
-          type="email"
-          fullWidth
-          name="email"
-          value={state.email}
-          onChange={handleChange}
-        />
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <TextField
+              autoFocus
+              margin="dense"
+              id="name"
+              label="Team Name"
+              type="text"
+              fullWidth
+              name="name"
+              value={state.name}
+              onChange={handleChange}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Autocomplete
+              multiple
+              id="team_members"
+              options={userOptions || []}
+              getOptionLabel={(option) => option.label}
+              getOptionSelected={(option, value) =>
+                option.value === value.value
+              }
+              onChange={(event, value) => {
+                setState({ ...state, team_members: value.map((v) => v.value) });
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="outlined"
+                  label="Team Members"
+                  placeholder="Team Members"
+                />
+              )}
+              value={state.team_members.map((id) => ({
+                label: users.find((user) => user.id === id)?.name,
+                value: id,
+              }))}
+            />
+          </Grid>
+        </Grid>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCloseModal} variant="contained">
           Cancel
         </Button>
         <Button onClick={handleSubmitForm} variant="contained">
-          Save
+          {isUpdate ? "Update" : "Save"}
         </Button>
       </DialogActions>
     </Dialog>

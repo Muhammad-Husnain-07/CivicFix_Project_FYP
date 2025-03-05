@@ -1,115 +1,183 @@
-import React from 'react';
-import {StyleSheet} from 'react-native';
 import ThemedBadge from '@/components/ThemedBadge';
+import {ThemedButton} from '@/components/ThemedButton';
 import ThemedDetailCard from '@/components/ThemedDetailCard';
 import {ThemedText} from '@/components/ThemedText';
 import {ThemedView} from '@/components/ThemedView';
-import {useLocalSearchParams} from 'expo-router';
+import apiClient from '@/utils/axiosConfig';
+import {useLocalSearchParams, useNavigation} from 'expo-router';
+import React, {useEffect} from 'react';
+import {StyleSheet, Image, Modal, TouchableOpacity, ScrollView, Alert, Linking} from 'react-native';
+import MapView, {Marker} from 'react-native-maps';
 
 const ViewComplaintScreen = () => {
   const params = useLocalSearchParams();
   const complaint = params;
+  const [modalVisible, setModalVisible] = React.useState(false);
+  const [teams, setTeams] = React.useState([]);
+
+  const getStatusBadge = status => {
+    const lowerStatus = status?.toLowerCase();
+    switch (lowerStatus) {
+      case 'pending':
+        return 'warning';
+      case 'resolved':
+        return 'success';
+      case 'in progress':
+        return 'info';
+      case 'closed':
+        return 'danger';
+      default:
+        return 'default';
+    }
+  };
+
+  const openGoogleMaps = () => {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${complaint.latitude},${complaint.longitude}`;
+    Linking.openURL(url).catch(err => console.error('Failed to open Google Maps', err));
+  };
+  const getTeam = async () => {
+    try {
+      const res = await apiClient(`/teams/list`);
+      setTeams(res);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    getTeam();
+  }, []);
+
   return (
-    <ThemedView style={styles.container}>
-      {/* Complaint Details Card */}
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <ThemedDetailCard style={styles.card}>
-        {/* Status Section */}
+        <ThemedView style={styles.imageContainer}>
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
+            {complaint?.upload_image ? (
+              <Image
+                source={{uri: 'data:image/jpeg;base64,' + complaint.upload_image}}
+                style={styles.imagePreview}
+              />
+            ) : (
+              <ThemedText>Image Preview</ThemedText>
+            )}
+          </TouchableOpacity>
+        </ThemedView>
+
         <ThemedView style={styles.statusContainer}>
           <ThemedText type="heading5" style={styles.statusLabel} primaryColor>
             Status
           </ThemedText>
-          <ThemedBadge
-            status={
-              complaint?.status?.toLowerCase() === 'pending'
-                ? 'warning'
-                : complaint?.status?.toLowerCase() === 'resolved'
-                  ? 'success'
-                  : complaint?.status?.toLowerCase() === 'inprogress'
-                    ? 'info'
-                    : 'danger'
-            }
-            style={styles.badge}
-          >
+          <ThemedBadge status={getStatusBadge(complaint?.status)} style={styles.badge}>
             {complaint?.status}
           </ThemedBadge>
         </ThemedView>
 
-        {/* Complaint Details */}
-        <DetailRow label="Department" value={complaint?.department} />
-        <DetailRow label="Complaint Category" value={complaint?.complaint_category} />
-        <DetailRow label="Complaint Type" value={complaint?.complaint_type} />
-        <DetailRow label="Complaint Detail" value={complaint?.complaint_details} />
+        <DetailRow label="Reference Number" value={complaint?.ref_number ?? 'N/A'} />
+        <DetailRow label="Complaint Category" value={complaint?.complaint_category ?? 'N/A'} />
+        <DetailRow label="Complaint Type" value={complaint?.complaint_type ?? 'N/A'} />
+        <DetailRow label="Complaint Details" value={complaint?.complaint_details ?? 'N/A'} />
         <DetailRow
           label="Assigned Team"
-          value={complaint?.assigned_team ?? 'Soon to be assigned'}
+          value={teams.find(team => team.id === complaint?.assigned_team)?.name ?? 'N/A'}
         />
+        <Modal visible={modalVisible} transparent={true} animationType="fade">
+          <ThemedView style={styles.modalContainer}>
+            <Image
+              source={{uri: 'data:image/jpeg;base64,' + complaint.upload_image}}
+              style={styles.fullImage}
+            />
+            <ThemedButton
+              title="Close"
+              onPress={() => setModalVisible(false)}
+              style={styles.closeButton}
+            />
+          </ThemedView>
+        </Modal>
       </ThemedDetailCard>
-    </ThemedView>
+    </ScrollView>
   );
 };
 
-/**
- * A reusable component for rendering label and value pairs.
- */
 const DetailRow = ({label, value}) => (
   <ThemedView style={styles.detailContainer}>
     <ThemedText type="heading6" style={styles.detailLabel} primaryColor>
       {label}
     </ThemedText>
-    <ThemedText type="default">{value}</ThemedText>
+    <ThemedText type="default" style={styles.detailValue}>
+      {value}
+    </ThemedText>
   </ThemedView>
 );
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
+  container: {flex: 1, padding: 12, backgroundColor: '#121212'},
+  mapContainer: {
+    width: '100%',
+    height: 200,
+    marginBottom: 20,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  map: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
   },
   card: {
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 4,
+    borderRadius: 20,
     marginBottom: 20,
+    padding: 24,
+    elevation: 6,
+    backgroundColor: '#1E1E1E',
+    shadowColor: 'rgba(0, 0, 0, 0.5)',
   },
   statusContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 10,
-    marginBottom: 12,
-    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 20,
     padding: 16,
-    elevation: 3,
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
+    borderRadius: 12,
+    backgroundColor: '#1E1E1E',
+    borderColor: '#3A3A3A',
+    borderWidth: 1,
   },
-  statusLabel: {
-    fontWeight: 'bold',
-  },
-  badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
+  statusLabel: {fontWeight: 'bold', fontSize: 16, color: '#ECEDEE'},
+  badge: {paddingHorizontal: 14, paddingVertical: 6, borderRadius: 12},
   detailContainer: {
-    marginBottom: 12,
-    paddingVertical: 10,
-    elevation: 3,
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    marginBottom: 12,
-    borderRadius: 8,
+    marginBottom: 20,
     padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#1E1E1E',
+    borderColor: '#3A3A3A',
+    borderWidth: 1,
   },
-  detailLabel: {
-    marginBottom: 4,
-    fontWeight: 'bold',
+  detailLabel: {marginBottom: 6, fontWeight: 'bold', fontSize: 14, color: '#ECEDEE'},
+  detailValue: {color: '#ADB5BD', fontSize: 14},
+  buttonContainer: {alignItems: 'center', marginTop: 10, marginBottom: 30, gap: 16},
+  imageContainer: {alignItems: 'center', marginVertical: 20},
+  imagePreview: {width: 200, height: 200, resizeMode: 'contain', borderRadius: 12},
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  },
+  fullImage: {
+    width: '90%',
+    height: '70%',
+    resizeMode: 'contain',
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  closeButton: {marginTop: 20, backgroundColor: '#0a7ea4'},
+  actionButton: {
+    width: '80%',
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#0a7ea4',
+    color: '#FFFFFF',
   },
 });
 

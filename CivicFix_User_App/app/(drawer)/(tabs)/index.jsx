@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {StyleSheet, ScrollView, Pressable} from 'react-native';
+import React, {useEffect, useState, useCallback} from 'react';
+import {StyleSheet, ScrollView, Pressable, RefreshControl} from 'react-native';
 import {ThemedView} from '@/components/ThemedView';
 import ThemedComplaintCard from '@/components/ThemedComplaintCard';
 import {ThemedText} from '@/components/ThemedText';
@@ -7,32 +7,30 @@ import {useNavigation} from 'expo-router';
 import {getData} from '@/hooks/useLocalStorage';
 import apiClient from '@/utils/axiosConfig';
 import Loader from '@/components/Loader';
+
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [loader, setLoader] = useState(false);
   const [userId, setUserId] = useState(null);
   const [complaints, setComplaints] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   const getComplaints = async () => {
     try {
       setLoader(true);
-      await apiClient(`/users/get-complaints?user_id=${userId}`).then(res => {
-        if (res?.message?.status === 200) {
-          setComplaints(
-            res?.data?.map(({image_url, ...item}) => {
-              return {
-                id: item?.complaint_id,
-                title: `${item?.department} - ${item?.complaint_type} (ID: ${item?.complaint_id})`,
-                ...item,
-              };
-            }) || [],
-          );
-          setLoader(false);
-        } else {
-          setComplaints([]);
-          setLoader(false);
-        }
-      });
+      const res = await apiClient(`/complaints?user_id=${userId}`);
+      if (res?.length > 0) {
+        setComplaints(
+          res?.map((item) => ({
+            id: item?.complaint_id,
+            title: `${item?.department} - ${item?.complaint_type} (ID: ${item?.complaint_id})`,
+            ...item,
+          })) || [],
+        );
+      } else {
+        setComplaints([]);
+      }
+      setLoader(false);
     } catch (err) {
       setLoader(false);
       console.log(err);
@@ -51,24 +49,32 @@ export default function HomeScreen() {
     }
   }, [userId]);
 
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    getComplaints().then(() => setRefreshing(false));
+  }, [userId]);
+
   return loader ? (
     <Loader />
   ) : (
     <ThemedView style={styles.container}>
-      {complaints?.length === 0 ? (
-        <>
-          <ThemedView style={styles.titleContainer}>
-            <ThemedText type="title">Welcome!</ThemedText>
-          </ThemedView>
-          <ThemedView style={styles.bodyContainer}>
-            <ThemedText type="body">
-              No Complaints Found. For Adding New Complaint Press + Icon on Top Right Corner.
-            </ThemedText>
-          </ThemedView>
-        </>
-      ) : (
-        <ScrollView style={{height: '100%', width: '100%'}}>
-          {complaints?.map(item => (
+      <ScrollView
+        style={{height: '100%', width: '100%'}}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        {complaints?.length === 0 ? (
+          <>
+            <ThemedView style={styles.titleContainer}>
+              <ThemedText type="title">Welcome!</ThemedText>
+            </ThemedView>
+            <ThemedView style={styles.bodyContainer}>
+              <ThemedText type="body">
+                No Complaints Found. For Adding New Complaint Press + Icon on Top Right Corner.
+              </ThemedText>
+            </ThemedView>
+          </>
+        ) : (
+          complaints?.map(item => (
             <Pressable
               key={item?.id}
               onPress={() => {
@@ -82,12 +88,13 @@ export default function HomeScreen() {
                 <ThemedComplaintCard key={item?.id} data={item} />
               </ThemedView>
             </Pressable>
-          ))}
-        </ScrollView>
-      )}
+          ))
+        )}
+      </ScrollView>
     </ThemedView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

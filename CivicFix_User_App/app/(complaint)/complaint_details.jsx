@@ -1,5 +1,5 @@
 import * as FileSystem from 'expo-file-system';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, ToastAndroid} from 'react-native';
 import {useEffect, useState} from 'react';
 import ThemedTextField from '@/components/ThemedTextField';
 import {ThemedButton} from '@/components/ThemedButton';
@@ -13,6 +13,17 @@ import Loader from '@/components/Loader';
 import Map from '@/components/Map';
 import {ThemedText} from '@/components/ThemedText';
 
+const getComplaintOptions = (complaintClass) => {
+  switch (complaintClass) {
+    case 'SNGPL':
+      return SNGPL_COMPLAINT_OPTIONS;
+    case 'LESCO':
+      return LESCO_COMPLAINT_OPTIONS;
+    default:
+      return [];
+  }
+};
+
 const ViewMap = ({setLocation, onSubmit}) => {
   const [pickedLocation, setPickedLocation] = useState(null);
 
@@ -21,7 +32,7 @@ const ViewMap = ({setLocation, onSubmit}) => {
       setLocation(pickedLocation);
       onSubmit();
     } else {
-      alert('Please pick a location on the map');
+      ToastAndroid.show('Please pick a location on the map', ToastAndroid.SHORT);
     }
   };
   return (
@@ -39,23 +50,36 @@ export default ComplaintDetailScreen = () => {
   const params = useLocalSearchParams();
   const [loader, setLoader] = useState(false);
   const [showMap, setShowMap] = useState(false);
-  const [typeOptions, setTypeOptions] = useState([]);
-  const [categoryOptions, setCategoryOptions] = useState([]);
-  const [complaintType, setComplaintType] = useState(null);
+  const [complaintOptions, setComplaintOptions] = useState([]);
   const [complaintCategory, setComplaintCategory] = useState(null);
-  const [complaintDetails, setComplaintDetails] = useState(null);
+  const [complaintType, setComplaintType] = useState(null);
+  const [complaintDetails, setComplaintDetails] = useState('');
   const [location, setLocation] = useState(null);
+  const [complaintTypes, setComplaintTypes] = useState([]);
+
+  useEffect(() => {
+    setComplaintOptions(getComplaintOptions(params?.complaint_class));
+  }, [params?.complaint_class]);
+
+  useEffect(() => {
+    if (complaintCategory) {
+      const complaintTypeOptions = complaintOptions?.find(item => item.value === complaintCategory)?.types || [];
+      setComplaintTypes(complaintTypeOptions);
+    }
+  }, [complaintCategory]);
 
   const handleSubmitComplaint = async () => {
+    if (!location) {
+      ToastAndroid.show('Please select a location', ToastAndroid.SHORT);
+      return;
+    }
+
     let uploadImage = null;
-    // Check if image exists and convert it to base64 before submitting
     if (params?.localImagePath) {
       try {
         const base64Image = await FileSystem.readAsStringAsync(params?.localImagePath, {
           encoding: FileSystem.EncodingType.Base64,
         });
-
-        // Replace the image with the base64 version in the request body
         uploadImage = base64Image;
       } catch (error) {
         console.error('Error reading image file:', error);
@@ -67,12 +91,18 @@ export default ComplaintDetailScreen = () => {
       data: {
         user_id: user_id,
         department: params?.complaint_class,
-        complaint_category: categoryOptions?.find(item => item.value === complaintCategory)?.label,
-        complaint_type: typeOptions?.find(item => item.value === complaintType)?.label,
+        complaint_category: complaintOptions?.find(item => item.value === complaintCategory)?.label,
+        complaint_type: complaintTypes?.find(item => item.value === complaintType)?.label,
         complaint_details: complaintDetails,
-        ref_number: params?.ocr_text,
+        ref_number: RegExp(/.*(?=:)/).test(params?.ocr_text)
+          ? params?.ocr_text?.replace(/.*(?=:)/, '')
+          : RegExp(/(no\.?|No\.?)/i).test(params?.ocr_text)
+            ? params?.ocr_text?.replace(/(no\.?|No\.?)/i, '')
+            : params?.ocr_text,
         status: 'PENDING',
-        upload_image: 'data:image/jpeg;base64,' + uploadImage,
+        upload_image: uploadImage,
+        latitude: location?.latitude,
+        longitude: location?.longitude,
         assigned_team_id: null,
       },
     };
@@ -80,67 +110,17 @@ export default ComplaintDetailScreen = () => {
     try {
       setLoader(true);
       const res = await apiClient.post('/users/create-complaint', body);
-      // After submitting the complaint, delete the image from local file system
       if (params?.localImagePath) {
         await FileSystem.deleteAsync(params?.localImagePath, {idempotent: true});
       }
-
-      // Reset the navigation stack or handle post-submit behavior
+      ToastAndroid.show('Complaint submitted successfully', ToastAndroid.SHORT);
       navigation.reset({index: 0, routes: [{name: '(drawer)'}]});
       setLoader(false);
     } catch (err) {
       setLoader(false);
-      console.log(err);
+      ToastAndroid.show(err.message, ToastAndroid.SHORT);
     }
   };
-
-  useEffect(() => {
-    if (params?.complaint_class === 'SNGPL') {
-      setCategoryOptions(
-        SNGPL_COMPLAINT_OPTIONS?.map(item => {
-          return {
-            label: item.label,
-            value: item.value,
-          };
-        }) || [],
-      );
-    } else if (params?.complaint_class === 'LESCO') {
-      setCategoryOptions(
-        LESCO_COMPLAINT_OPTIONS?.map(item => {
-          return {
-            label: item.label,
-            value: item.value,
-          };
-        }),
-      );
-    }
-  }, []);
-
-  useEffect(() => {
-    if (params?.complaint_class === 'SNGPL' && complaintCategory) {
-      setTypeOptions(
-        SNGPL_COMPLAINT_OPTIONS?.find(item => item.value === complaintCategory)?.types?.map(
-          item => {
-            return {
-              label: item.label,
-              value: item.value,
-            };
-          },
-        ) || [],
-      );
-    } else if (params?.complaint_class === 'LESCO' && complaintCategory) {
-      setTypeOptions(
-        LESCO_COMPLAINT_OPTIONS?.find(item => item.value === complaintCategory)?.types?.map(
-          item => {
-            return {
-              label: item.label,
-              value: item.value,
-            };
-          },
-        ),
-      );
-    }
-  }, [complaintCategory]);
 
   return loader ? (
     <Loader />
@@ -150,21 +130,22 @@ export default ComplaintDetailScreen = () => {
     <ThemedView style={styles.container}>
       <ThemedView style={{padding: 10}}>
         <ThemedText type="heading5">
-          Your complaint will be routed to the {params?.complaint_class} department. Please provide the necessary details.
+          Your complaint will be routed to the {params?.complaint_class} department. Please provide
+          the necessary details.
         </ThemedText>
       </ThemedView>
       <ThemedView style={styles.fieldContainer}>
         <ThemedDropdown
-          data={categoryOptions}
+          data={complaintOptions}
           placeholder="Select Complaint Category"
           value={complaintCategory}
           setValue={setComplaintCategory}
         />
       </ThemedView>
-      {typeOptions?.length > 0 && (
+      {complaintCategory && (
         <ThemedView style={styles.fieldContainer}>
           <ThemedDropdown
-            data={typeOptions}
+            data={complaintTypes}
             placeholder="Select Complaint Type"
             value={complaintType}
             setValue={setComplaintType}
@@ -201,7 +182,24 @@ export default ComplaintDetailScreen = () => {
         />
       </ThemedView>
       <ThemedView style={styles.buttonContainer}>
-        <ThemedButton title="Submit" onPress={() => setShowMap(true)} />
+        <ThemedButton
+          title="Submit"
+          onPress={() => {
+            if (!complaintCategory) {
+              ToastAndroid.show('Please select a complaint category', ToastAndroid.SHORT);
+              return;
+            }
+            if (!complaintType) {
+              ToastAndroid.show('Please select a complaint type', ToastAndroid.SHORT);
+              return;
+            }
+            if (!complaintDetails) {
+              ToastAndroid.show('Please enter complaint details', ToastAndroid.SHORT);
+              return;
+            }
+            setShowMap(true);
+          }}
+        />
       </ThemedView>
     </ThemedView>
   );
@@ -234,3 +232,4 @@ const styles = StyleSheet.create({
     maxWidth: 400,
   },
 });
+

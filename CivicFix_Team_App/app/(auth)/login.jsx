@@ -1,14 +1,73 @@
+import {Feather} from '@expo/vector-icons';
+import axios from 'axios';
+import { useNavigation} from 'expo-router';
+import React, {useState} from 'react';
+import {StyleSheet, ToastAndroid,  TouchableOpacity} from 'react-native';
 import {ThemedButton} from '@/components/ThemedButton';
 import {ThemedText} from '@/components/ThemedText';
 import ThemedTextField from '@/components/ThemedTextField';
 import {ThemedView} from '@/components/ThemedView';
-import {Link, useNavigation} from 'expo-router';
-import React from 'react';
-import {StyleSheet} from 'react-native';
+import {storeData} from '@/hooks/useLocalStorage';
+import Loader from '@/components/Loader';
+import {URL} from '@/utils/baseURL';
+
+const BASE_URL = URL;
 
 export default LoginScreen = () => {
   const navigation = useNavigation();
-  return (
+  const [loader, setLoader] = useState(false);
+  const [credentials, setCredentials] = useState({
+    email: '',
+    password: '',
+  });
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleLogin = async values => {
+    if (!values.email || !values.password) {
+      ToastAndroid.show('Please fill in all fields', ToastAndroid.SHORT);
+      return;
+    }
+    const isValidEmail = email => {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    };
+
+    if (!isValidEmail(values.email)) {
+      ToastAndroid.show('Please enter a valid email address', ToastAndroid.SHORT);
+      return;
+    }
+
+    const body = {
+      data: {
+        email: values.email,
+        password: values.password,
+      },
+    };
+    try {
+      setLoader(true);
+      await axios
+        .post(BASE_URL + '/team/login', body, {
+          headers: {'Content-Type': 'application/json'},
+        })
+        .then(res => {
+          const user = res.data.data;
+          storeData('access_token', user.access_token);
+          storeData('refresh_token', user.refresh_token);
+          storeData('user_data', user);
+          navigation.reset({index: 0, routes: [{name: '(drawer)'}]});
+          ToastAndroid.show('Login successful', ToastAndroid.SHORT);
+          setLoader(false);
+        });
+    } catch (err) {
+      setLoader(false);
+      ToastAndroid.show('Login failed', ToastAndroid.SHORT);
+      console.log(err);
+    }
+  };
+
+  return loader ? (
+    <Loader />
+  ) : (
     <ThemedView style={styles.container}>
       <ThemedView style={{display: 'flex', flexDirection: 'row'}}>
         <ThemedText type="title">CivicFix</ThemedText>
@@ -16,18 +75,48 @@ export default LoginScreen = () => {
       </ThemedView>
       <ThemedView style={styles.subContainer}>
         <ThemedView style={styles.fieldContainer}>
-          <ThemedTextField placeholder="User Name" style={styles.fieldStyling} />
+          <ThemedTextField
+            placeholder="Email"
+            style={styles.fieldStyling}
+            onChangeText={text =>
+              setCredentials(prevState => {
+                return {...prevState, email: text};
+              })
+            }
+          />
         </ThemedView>
-        <ThemedView style={styles.fieldContainer}>
-          <ThemedTextField placeholder="Password" style={styles.fieldStyling} />
+        <ThemedView style={[styles.fieldContainer, {alignItems: 'center'}]}>
+          <ThemedTextField
+            placeholder="Password"
+            style={styles.fieldStyling}
+            secureTextEntry={!showPassword}
+            onChangeText={text =>
+              setCredentials(prevState => {
+                return {...prevState, password: text};
+              })
+            }
+          />
+        </ThemedView>
+        <ThemedView style={{display: 'flex'}}>
+          <TouchableOpacity
+            style={{flexDirection: 'row', gap: 5, marginRight: '50%'}}
+            onPress={() => setShowPassword(prev => !prev)}
+          >
+            <Feather
+              name={showPassword ? 'check-square' : 'square'}
+              size={24}
+              color={showPassword ? 'green' : 'white'}
+            />
+            <ThemedText style={{textAlign: 'left'}}>
+              {showPassword ? 'Hide' : 'Show'} Password
+            </ThemedText>
+          </TouchableOpacity>
         </ThemedView>
         <ThemedView style={styles.buttonContainer}>
           <ThemedButton
             type="outlined"
             title="Login"
-            onPress={() => {
-              navigation.reset({index: 0, routes: [{name: '(drawer)'}]});
-            }}
+            onPress={() => handleLogin(credentials)}
             style={styles.buttonStyling}
           />
         </ThemedView>
@@ -59,6 +148,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingBlock: 5,
+    marginTop: 10,
   },
   fieldStyling: {
     width: '100%',
@@ -68,11 +158,16 @@ const styles = StyleSheet.create({
     margin: 12,
     borderWidth: 1,
     borderRadius: 10,
+    paddingLeft: 10,
   },
   buttonStyling: {
     width: 150,
     height: 46,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  showPasswordText: {
+    marginTop: 5,
+    color: '#1E90FF',
   },
 });

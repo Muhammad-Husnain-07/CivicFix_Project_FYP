@@ -7,6 +7,7 @@ import { CardContent, Card as MuiCard, Typography } from "@mui/material";
 import { spacing } from "@mui/system";
 import axios from "axios";
 import Loader from "../../../components/Loader";
+import apiClient from "../../../utils/axiosConfig";
 const Card = styled(MuiCard)(spacing);
 
 const Spacer = styled.div(spacing);
@@ -64,21 +65,13 @@ const PieChart = ({ theme, filter }) => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // const url = `https://resolvex-api.graymushroom-01823765.uksouth.azurecontainerapps.io/api/charts/dispute-channels`;
-        // const response = await axios.post(url, {
-        //   timeframe: filter,
-        // });
-        // const allChannels = response.data.data;
-        // if (!allChannels) {
-        //   setLoading(false);
-        //   setChartData({ labels: [], data: [] });
-        //   return;
-        // }
+        const data = await apiClient(
+          "/complaints/pie-chart-stats?department=LESCO"
+        );
+        if (data) {
+          setChartData(data);
+        }
         setLoading(false);
-        setChartData({
-          labels: ["Reported", "Resolved", "Closed"],
-          data: [240, 100, 80],
-        });
       } catch (error) {
         setChartData({ labels: [], data: [] });
         setLoading(false);

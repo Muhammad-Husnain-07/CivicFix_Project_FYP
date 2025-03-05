@@ -6,6 +6,7 @@ import { Card as MuiCard, CardContent, CardHeader } from "@mui/material";
 import { spacing } from "@mui/system";
 import axios from "axios";
 import Loader from "../../../components/Loader";
+import apiClient from "../../../utils/axiosConfig";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -57,28 +58,18 @@ function MultiAxisLineChart({ theme }) {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // const url = `https://resolvex-api.graymushroom-01823765.uksouth.azurecontainerapps.io/api/charts/dispute-trends`;
-        // const response = await axios.get(url);
-        // const allDisputes = response.data.data;
-        // if (!allDisputes) {
-        //   setLoading(false);
-        //   return;
-        // }
-        setChartData({
-          labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-          datasets: [
-            {
-              label: "LESCO",
-              data: [12, 14, 13, 15, 12, 13],
-              yAxisID: "y",
-            },
-            {
-              label: "SNGPL",
-              data: [12, 4, 4, 4, 4, 13],
-              yAxisID: "y",
-            },
-          ],
-        });
+        const data = await apiClient("/department-monthly-stats");
+        if (data) {
+          setChartData({
+            labels: data?.labels,
+            datasets: data?.datasets?.map((item) => {
+              return {
+                ...item,
+                yAxisID: "y",
+              };
+            }),
+          });
+        }
 
         setLoading(false);
       } catch (error) {
