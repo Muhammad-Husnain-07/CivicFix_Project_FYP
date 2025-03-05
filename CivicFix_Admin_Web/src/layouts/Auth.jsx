@@ -1,5 +1,5 @@
-import React from "react";
-import { Outlet } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
 
 import { CssBaseline, Paper } from "@mui/material";
@@ -35,6 +35,17 @@ const Wrapper = styled(Paper)`
 `;
 
 const Auth = ({ children }) => {
+  const navigate = useNavigate();
+  const access_token = localStorage.getItem("access_token");
+  useEffect(() => {
+    const isAuthPage = ["/admin-sign-in", "/sub-admin-sign-in"].includes(
+      window.location.pathname
+    );
+
+    if (!access_token && !isAuthPage) {
+      navigate("/admin-sign-in");
+    }
+  }, [navigate]);
   return (
     <Root>
       <CssBaseline />

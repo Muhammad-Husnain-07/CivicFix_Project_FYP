@@ -1,46 +1,102 @@
-import React from 'react';
-import {StyleSheet, ScrollView, Pressable} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {StyleSheet, ScrollView, Pressable, RefreshControl} from 'react-native';
 import {ThemedView} from '@/components/ThemedView';
 import ThemedComplaintCard from '@/components/ThemedComplaintCard';
 import {ThemedText} from '@/components/ThemedText';
 import {useNavigation} from 'expo-router';
+import Loader from '@/components/Loader';
+import {getData} from '@/hooks/useLocalStorage';
+import apiClient from '@/utils/axiosConfig';
+
 export default function HomeScreen() {
   const navigation = useNavigation();
-  //Generate Random Objects Array
-  const Complaints = [
-    {id: 1, title: 'Complaint1', status: 'Pending'},
-    {id: 2, title: 'Complaint2', status: 'Closed'},
-    {id: 3, title: 'Complaint3', status: 'Pending'},
-    {id: 4, title: 'Complaint4', status: 'Resolved'},
-    {id: 5, title: 'Complaint5', status: 'Pending'},
-    {id: 6, title: 'Complaint6', status: 'Resolved'},
-    {id: 7, title: 'Complaint7', status: 'Pending'},
-    {id: 8, title: 'Complaint8', status: 'In Progress'},
-    {id: 9, title: 'Complaint9', status: 'Closed'},
-  ];
-  return (
+  const [loader, setLoader] = useState(false);
+  const [teamId, setTeamId] = useState(null);
+  const [complaints, setComplaints] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const getComplaints = async () => {
+    try {
+      setLoader(true);
+      const res = await apiClient(`/complaints?team_id=${teamId}`);
+      if (res?.length > 0) {
+        setComplaints(
+          res.map(item => ({
+            id: item?.complaint_id,
+            title: `${item?.department} - ${item?.complaint_type} (ID: ${item?.complaint_id})`,
+            ...item,
+          }))
+        );
+      } else {
+        setComplaints([]);
+      }
+      setLoader(false);
+      setRefreshing(false);
+    } catch (err) {
+      setLoader(false);
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    getData('user_data').then(data => {
+      setTeamId(JSON.parse(data)?.team_id);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (teamId) {
+      getComplaints();
+    }
+  }, [teamId]);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    getComplaints();
+  };
+
+  return loader ? (
+    <Loader />
+  ) : (
     <ThemedView style={styles.container}>
-      {Complaints?.length === 0 && (
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText type="title">Welcome!</ThemedText>
-        </ThemedView>
-      )}
-      <ScrollView style={{height: '100%', width: '100%'}}>
-        <Pressable
-          onPress={() => {
-            navigation.navigate('(complaint)', {screen: 'view_complaint'});
-          }}
-        >
-          <ThemedView style={styles.subContainer}>
-            {Complaints?.map(item => (
-              <ThemedComplaintCard key={item?.id} data={item} />
-            ))}
+      {complaints?.length === 0 ? (
+        <>
+          <ThemedView style={styles.titleContainer}>
+            <ThemedText type="title">Welcome!</ThemedText>
+            <ThemedText type="default">No Complaints Assigned.</ThemedText>
           </ThemedView>
-        </Pressable>
-      </ScrollView>
+        </>
+      ) : (
+        <ScrollView
+          style={{height: '100%', width: '100%'}}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+            />
+          }
+        >
+          {complaints?.map(item => (
+            <Pressable
+              key={item?.id}
+              onPress={() => {
+                navigation.navigate('(complaint)', {
+                  screen: 'view_complaint',
+                  params: {...item},
+                });
+              }}
+            >
+              <ThemedView style={styles.subContainer}>
+                <ThemedComplaintCard key={item?.id} data={item} />
+              </ThemedView>
+            </Pressable>
+          ))}
+        </ScrollView>
+      )}
     </ThemedView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -53,7 +109,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   titleContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     gap: 8,
   },
@@ -69,3 +125,4 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
 });
+

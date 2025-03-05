@@ -4,7 +4,7 @@ import * as ImagePicker from 'expo-image-picker'; // Import ImagePicker
 import {ThemedView} from './ThemedView';
 import {ThemedText} from './ThemedText';
 
-export default function Camera() {
+export default function Camera({onSubmit}) {
   const [photo, setPhoto] = useState(null); // To store the selected/taken photo
   const [status, requestPermission] = ImagePicker.useCameraPermissions();
 
@@ -58,8 +58,9 @@ export default function Camera() {
   };
 
   const handleSubmit = () => {
-    console.log('Photo submitted:', photo);
-    // Add logic to handle submission of the photo
+    if (photo) {
+      onSubmit(photo); // Pass the photo to the parent component
+    }
   };
 
   return (
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
+    resizeMode: 'contain',
   },
   text: {
     fontSize: 16,

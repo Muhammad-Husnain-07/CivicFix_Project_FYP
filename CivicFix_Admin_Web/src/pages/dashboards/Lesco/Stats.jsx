@@ -66,8 +66,6 @@ const illustrationPercentageStyle = (props) => css`
 
 const Percentage = styled(MuiTypography)`
   span {
-    color: ${(props) => props.percentagecolor};
-    background: ${(props) => rgba(props.percentagecolor, 0.1)};
     padding: 2px;
     border-radius: 3px;
     margin-right: ${(props) => props.theme.spacing(2)};
@@ -96,8 +94,6 @@ const Stats = ({
   title,
   amount,
   chip,
-  percentagetext,
-  percentagecolor,
   illustration,
 }) => {
   return (
@@ -112,10 +108,9 @@ const Stats = ({
         <Percentage
           variant="subtitle2"
           color="textSecondary"
-          percentagecolor={percentagecolor}
           illustration={illustration}
         >
-          <span>{percentagetext}</span> Since {chip}
+          Since {chip}
         </Percentage>
         {!illustration && <Chip label={chip} />}
       </CardContent>

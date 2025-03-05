@@ -114,6 +114,7 @@ import {
 } from "@mui/material";
 import { spacing } from "@mui/system";
 import { alpha } from "@mui/material/styles";
+import apiClient from "../../../utils/axiosConfig";
 
 const Card = styled(MuiCard)(spacing);
 const ChartWrapper = styled.div`
@@ -126,27 +127,12 @@ function LineChart({ theme, filter }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        //const url = `https://resolvex-api.graymushroom-01823765.uksouth.azurecontainerapps.io/api/charts/disputes?timeframe=${filter}`;
-        //const response = await axios.post(url);
-        //const allDisputes = response.data.data;
-        setChartData({
-          labels: [
-            "Dec",
-            "Nov",
-            "Oct",
-            "Sep",
-            "Aug",
-            "Jul",
-            "Jun",
-            "May",
-            "Apr",
-            "Mar",
-            "Feb",
-            "Jan",
-          ],
-          datasets: [
-            {
-              label: "Complaints",
+        const data =await apiClient("/complaints/yearly-stats")
+        if(data){
+          setChartData({
+            labels: data?.labels,
+            datasets: [{
+              ...data?.datasets?.[0],
               fill: true,
               backgroundColor: function (context) {
                 const chart = context.chart;
@@ -167,12 +153,9 @@ function LineChart({ theme, filter }) {
               },
               borderColor: theme.palette.secondary.main,
               tension: 0.4,
-              data: [
-                420, 590, 300, 220, 400, 300, 420, 590, 300, 220, 400, 300,
-              ],
-            },
-          ],
-        });
+            }]
+          })
+        }
       } catch (error) {
         console.error("Error fetching the chart data", error);
       }

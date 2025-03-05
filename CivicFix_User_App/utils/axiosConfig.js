@@ -1,8 +1,9 @@
 import {getData, storeData} from '@/hooks/useLocalStorage';
 import axios from 'axios';
+import { URL } from './baseURL';
 
 // Automatically determine the server IP
-const BASE_URL = `${process.env.EXPO_PUBLIC_WEB_BASE_URL}`; // Default port is 8000, adjust if needed
+const BASE_URL = URL; // Default port is 8000, adjust if needed
 
 // Create Axios instance
 const apiClient = axios.create({

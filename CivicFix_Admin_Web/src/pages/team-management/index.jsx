@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "@emotion/styled";
 import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
@@ -11,11 +11,35 @@ import {
 } from "@mui/material";
 import TeamTable from "./TeamTable";
 import TeamModal from "./TeamModal";
+import apiClient from "../../utils/axiosConfig";
 
 function TeamManagement() {
+  const [rowData, setRowData] = React.useState(null);
   const [openModal, setOpenModal] = React.useState(false);
+  const [data, setData] = React.useState([]);
 
-  const handleCloseModal = () => setOpenModal(false);
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setRowData(null);
+  };
+
+  const getTeamUsers = async () => {
+    try {
+      const response = await apiClient.get("/teams/list");
+      const data = response;
+      if (data) {
+        setData(
+          data.filter((team) => team.department == localStorage.getItem("department_id"))
+        );
+}    } catch (error) {
+      console.error("Error fetching data: ", error);
+    }
+  };
+
+  useEffect(() => {
+    getTeamUsers();
+  }, []);
+
   return (
     <React.Fragment>
       <Helmet title="Team Management" />
@@ -30,12 +54,18 @@ function TeamManagement() {
           </Button>
         </Grid>
         <Grid item xs={12} sm={12} md={12} lg={12}>
-          <TeamTable />
+          <TeamTable setRowData={setRowData} setOpenModal={setOpenModal} data={data} />
         </Grid>
       </Grid>
-      <TeamModal openModal={openModal} handleCloseModal={handleCloseModal} />
+      <TeamModal
+        openModal={openModal}
+        handleCloseModal={handleCloseModal}
+        rowData={rowData}
+        getTeamUsers={getTeamUsers}
+      />
     </React.Fragment>
   );
 }
 
 export default TeamManagement;
+

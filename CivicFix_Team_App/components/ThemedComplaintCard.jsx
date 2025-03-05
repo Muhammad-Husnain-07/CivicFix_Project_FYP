@@ -7,23 +7,23 @@ import ThemedBadge from './ThemedBadge';
 
 const ThemedCard = ({data, style, lightColor, darkColor, ...rest}) => {
   const borderColor = useThemeColor({light: lightColor, dark: darkColor}, 'border');
-  const statusColor=()=>{
-    if(data?.status === 'Pending'){
+  const statusColor = () => {
+    if (data?.status?.toLowerCase() === 'pending') {
       return 'warning';
-    } else if(data?.status === 'Resolved'){
+    } else if (data?.status?.toLowerCase() === 'resolved') {
       return 'success';
-    } else if(data?.status === 'Closed'){
+    } else if (data?.status?.toLowerCase() === 'closed') {
       return 'danger';
     } else {
       return 'info';
     }
-  }
+  };
   return (
     <ThemedView style={[{borderColor}, styles.card]}>
       <ThemedText style={styles.title}>{data?.title || 'No Title'}</ThemedText>
       {data?.status ? (
         <ThemedView style={styles.rightSection}>
-          <ThemedBadge status={statusColor()} >Status: {data?.status}</ThemedBadge>
+          <ThemedBadge status={statusColor()}>{data?.status}</ThemedBadge>
         </ThemedView>
       ) : null}
     </ThemedView>

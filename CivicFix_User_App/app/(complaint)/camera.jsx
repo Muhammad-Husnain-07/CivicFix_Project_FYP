@@ -1,6 +1,6 @@
 import {useNavigation} from 'expo-router';
-import React, { useState } from 'react';
-import {StyleSheet} from 'react-native';
+import React, {useState} from 'react';
+import {StyleSheet, Alert} from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import Camera from '@/components/Camera';
 import apiClient from '@/utils/axiosConfig';
@@ -34,19 +34,25 @@ export default CameraScreen = () => {
       // Call your API and send the image data
       await apiClient.post('/users/detect-complaint-type', body).then(res => {
         // On successful API call, navigate to the complaint details screen
-        navigation.navigate('(complaint)', {
-          screen: 'complaint_details',
-          params: {
-            complaint_class: res?.data?.complaint_class,
-            ocr_text: res?.data?.ocr_text,
-            localImagePath: imageName, // Pass the local image path to complaint details screen
-          },
-        });
+        if (res?.data?.complaint_class) {
+          navigation.navigate('(complaint)', {
+            screen: 'complaint_details',
+            params: {
+              complaint_class: res?.data?.complaint_class,
+              ocr_text: res?.data?.ocr_text,
+              localImagePath: imageName, // Pass the local image path to complaint details screen
+            },
+          });
+        } else {
+          Alert.alert('Error', 'Image not recognized. Please try again.');
+        }
       });
       setLoader(false);
     } catch (err) {
       setLoader(false);
-      console.log(err);
+      if (err?.response?.data?.message?.description)
+        Alert.alert('Error', err?.response?.data?.message?.description);
+      else Alert.alert('Error', 'Something went wrong. Please try again.');
     }
   };
 

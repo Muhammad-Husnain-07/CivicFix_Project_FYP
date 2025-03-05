@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import {
   Box,
@@ -14,7 +14,7 @@ import { spacing } from "@mui/system";
 
 import GlobalStyle from "../components/GlobalStyle";
 import Navbar from "../components/navbar/Navbar";
-import dashboardItems from "../components/sidebar/dashboardItems";
+import DashboardItems from "../components/sidebar/dashboardItems";
 import Sidebar from "../components/sidebar/Sidebar";
 import Footer from "../components/Footer";
 import Settings from "../components/Settings";
@@ -61,6 +61,8 @@ const MainContent = styled(Paper)`
 
 const Dashboard = ({ children }) => {
   const router = useLocation();
+  const theme = useTheme();
+  const isLgUp = useMediaQuery(theme.breakpoints.up("lg"));
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleDrawerToggle = () => {
@@ -72,9 +74,7 @@ const Dashboard = ({ children }) => {
     setMobileOpen(false);
   }, [router.pathname]);
 
-  const theme = useTheme();
-  const isLgUp = useMediaQuery(theme.breakpoints.up("lg"));
-
+  const dashboardItems = DashboardItems();
   return (
     <Root>
       <CssBaseline />

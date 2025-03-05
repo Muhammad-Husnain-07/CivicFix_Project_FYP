@@ -7,13 +7,14 @@ import { CardContent, Card as MuiCard, Typography } from "@mui/material";
 import { spacing } from "@mui/system";
 import axios from "axios";
 import Loader from "../../../components/Loader";
+import apiClient from "../../../utils/axiosConfig";
 
 const Card = styled(MuiCard)(spacing);
 
 const Spacer = styled.div(spacing);
 
 const ChartWrapper = styled.div`
-   width: 100%;
+  width: 100%;
 `;
 
 const StackedBarChart = ({ theme, filter }) => {
@@ -24,38 +25,22 @@ const StackedBarChart = ({ theme, filter }) => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // const url = `https://resolvex-api.graymushroom-01823765.uksouth.azurecontainerapps.io/api/charts/resolved-disputes`;
-        // const response = await axios.post(url, {
-        //   timeframe: filter,
-        // });
-        // const allResolvedHours = response.data;
-        // if (!allResolvedHours) {
-        //   setLoading(false);
-        //   return;
-        // }
+        const data = await apiClient(
+          "/complaints/bar-chart-stats?department=SNGPL"
+        );
+        if(data){
         setChartData({
-          labels: ["Jan", "Feb", "March", "April", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"],
-          datasets: [
-            {
-              label: "Reported",
-              data: [45, 35, 25, 75, 65, 55, 45, 35, 45, 55, 65, 75],
-              backgroundColor: theme.palette.secondary.light,
+          labels: data?.labels,
+          datasets: data?.datasets?.map((item) => {
+            return {
+              label: item.label,
+              data: item.data,
               stack: "Stack 0",
-            },
-            {
-              label: "Resolved",
-              data: [55, 65, 75, 25, 35, 45, 55, 65, 75, 85, 95, 105],
-              backgroundColor: theme.palette.primary.light,
-              stack: "Stack 0",
-            },
-            {
-              label: "Closed",
-              data: [65, 75, 85, 15, 25, 35, 45, 55, 65, 75, 85, 95],
-              backgroundColor: theme.palette.error.light,
-              stack: "Stack 0",
-            }
-          ],
+            };
+          }),
         });
+        }
+
         setLoading(false);
       } catch (error) {
         setLoading(false);
@@ -91,7 +76,7 @@ const StackedBarChart = ({ theme, filter }) => {
       },
     },
   };
-
+console.log(chartData)
   return (
     <Card mb={1}>
       <CardContent>
@@ -113,4 +98,3 @@ const StackedBarChart = ({ theme, filter }) => {
 };
 
 export default withTheme(StackedBarChart);
-
