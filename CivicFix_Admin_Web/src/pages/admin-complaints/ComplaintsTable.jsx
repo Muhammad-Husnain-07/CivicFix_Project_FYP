@@ -34,127 +34,6 @@ const style = {
   p: 4,
 };
 
-const columns = [
-  {
-    name: "complaint_id",
-    label: "Complaint ID",
-    options: {
-      filter: true,
-      sort: false,
-    },
-  },
-  {
-    name: "department",
-    label: "Department",
-    options: {
-      filter: true,
-      sort: false,
-    },
-  },
-  {
-    name: "ref_number",
-    label: "Reference Number",
-    options: {
-      filter: true,
-      sort: false,
-    },
-  },
-  {
-    name: "complaint_category",
-    label: "Complaint Category",
-    options: {
-      filter: true,
-      sort: false,
-    },
-  },
-  {
-    name: "complaint_type",
-    label: "Complaint Type",
-    options: {
-      filter: true,
-      sort: false,
-    },
-  },
-  {
-    name: "complaint_details",
-    label: "Complaint Details",
-    options: {
-      filter: true,
-      sort: false,
-    },
-  },
-  {
-    name: "submission_date",
-    label: "Submission Date",
-    options: {
-      filter: true,
-      sort: true,
-    },
-  },
-  {
-    name: "status",
-    label: "Status",
-    options: {
-      filter: true,
-      sort: false,
-      customBodyRender: (value, tableMeta, updateValue) => {
-        return value ? (
-          <Chip
-            label={value}
-            color={
-              value?.toLowerCase() === "pending"
-                ? "warning"
-                : value?.toLowerCase() === "inprogress"
-                ? "info"
-                : value?.toLowerCase() === "resolved"
-                ? "success"
-                : "error"
-            }
-          />
-        ) : null;
-      },
-    },
-  },
-  {
-    name: "user_id",
-    label: "User ID",
-    options: {
-      filter: true,
-      sort: false,
-    },
-  },
-  {
-    name: "assigned_team_id",
-    label: "Assigned Team ID",
-    options: {
-      filter: true,
-      sort: false,
-    },
-  },
-  {
-    name: "resolved_status",
-    label: "Resolved Status",
-    options: {
-      filter: true,
-      sort: false,
-      customBodyRender: (value, tableMeta, updateValue) => {
-        return value ? (
-          <Chip
-            label={value}
-            color={
-              value?.toLowerCase() === "resolved"
-                ? "success"
-                : value?.toLowerCase() === "unresolved"
-                ? "error"
-                : "warning"
-            }
-          />
-        ) : null;
-      },
-    },
-  },
-];
-
 const ComplaintsTable = ({ theme }) => {
   const [rows, setRows] = useState([]);
   const [teams, setTeams] = useState([]);
@@ -260,7 +139,7 @@ const ComplaintsTable = ({ theme }) => {
         filter: true,
         sort: false,
         customBodyRender: (value, tableMeta, updateValue) => {
-          return teams?.find((team) => team.id === value)?.name;
+          return teams?.find((team) => team.id === value)?.name || "N/A";
         }
       },
     },
@@ -277,14 +156,14 @@ const ComplaintsTable = ({ theme }) => {
               color={
                 value?.toLowerCase() === "pending"
                   ? "warning"
-                  : value?.toLowerCase() === "in_progress"
+                  : value?.toLowerCase() === "in progress"
                   ? "info"
                   : value?.toLowerCase() === "resolved"
                   ? "success"
                   : "error"
               }
             />
-          ) : null;
+          ) : "N/A";
         },
       },
     },
@@ -299,14 +178,14 @@ const ComplaintsTable = ({ theme }) => {
             <Chip
               label={value}
               color={
-                value?.toLowerCase() === "closed"
-                  ? "success"
-                  : value?.toLowerCase() === "completed"
-                  ? "error"
-                  : "warning"
+                value?.toLowerCase() === "completed"
+                ? "success"
+                : value?.toLowerCase() === "closed"
+                ? "error"
+                : "warning"
               }
             />
-          ) : null;
+          ) : "N/A";
         },
       },
     },

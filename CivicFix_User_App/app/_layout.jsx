@@ -6,6 +6,7 @@ import {useEffect, useState} from 'react';
 import 'react-native-reanimated';
 import {useColorScheme} from '@/hooks/useColorScheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -18,6 +19,15 @@ export default function RootLayout() {
   });
   const [token, setToken] = useState(null);
   const [isAppReady, setAppReady] = useState(false);
+
+
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true, // crucial for showing alerts while app is in foreground
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
 
   // Load access token and mark app as ready
   useEffect(() => {

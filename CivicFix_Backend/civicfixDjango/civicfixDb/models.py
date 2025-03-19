@@ -68,6 +68,10 @@ class Teamuser(models.Model):
     email = models.EmailField(unique=True,null=True, blank=True)
     password = models.TextField(null=True, blank=True)
     
+    is_active = True
+    is_authenticated = True
+    is_anonymous = False
+    
     def __str__(self):
         return f"{self.id} - {self.name}"
     
@@ -116,18 +120,28 @@ class Feedback(models.Model):
         return f'Feedback #{self.feedback_id}'
 
 class Admin(models.Model):
+    id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=100)
+    
+    is_active = True
+    is_authenticated = True
+    is_anonymous = False
     
     def __str__(self):
         return self.username
 
 class SubAdmin(models.Model):
+    id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=100)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    
+    is_active = True
+    is_authenticated = True
+    is_anonymous = False
     
     def __str__(self):
         return self.username

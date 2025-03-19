@@ -40,7 +40,7 @@ const renderDetail = (label, value, isChip = false) => (
         color={
           value?.toLowerCase() === "pending"
             ? "warning"
-            : value?.toLowerCase() === "in_progress"
+            : value?.toLowerCase() === "in progress"
             ? "info"
             : value?.toLowerCase() === "resolved"
             ? "success"
@@ -126,9 +126,10 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams }) => {
                 alt="Complaint Image"
                 sx={{
                   width: "100%",
-                  height: "auto",
+                  height: "350px",
                   borderRadius: "8px",
                   boxShadow: 3,
+                  objectFit: "contain",
                 }}
               />
             </Grid>

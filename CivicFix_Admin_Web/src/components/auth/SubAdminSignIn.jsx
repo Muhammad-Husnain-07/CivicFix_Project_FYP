@@ -45,10 +45,11 @@ function SignIn() {
       })}
       onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
         try {
-          const response = await apiClient.post("/subadmin/login", {
+          const res = await apiClient.post("/subadmin/login", {
             username: values.username,
             password: values.password,
           });
+          const response = res.data;
           localStorage.setItem("username", response.username);
           localStorage.setItem("role", response.role);
           localStorage.setItem("department", response.department);

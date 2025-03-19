@@ -47,12 +47,21 @@ const SidebarFooter = ({ ...rest }) => {
             }}
             variant="dot"
           >
-            <Avatar alt={"Admin"} src="/static/img/avatars/avatar-2.jpg" />
+            <Avatar
+              alt={"Admin"}
+              src={`https://ui-avatars.com/api/?name=${localStorage.getItem(
+                "username"
+              )}&background=2196f3&color=fff`}
+            />
           </FooterBadge>
         </Grid>
         <Grid item>
-          <FooterText variant="body2">Muhammad Husnain</FooterText>
-          <FooterSubText variant="caption">Administrator</FooterSubText>
+          <FooterText variant="body2">
+            {localStorage.getItem("username")}
+          </FooterText>
+          <FooterSubText variant="caption">
+            {localStorage.getItem("role") === "admin" ? "Admin" : "Sub Admin"}
+          </FooterSubText>
         </Grid>
       </Grid>
     </Footer>

@@ -6,6 +6,7 @@ import {useEffect, useState} from 'react';
 import 'react-native-reanimated';
 import {useColorScheme} from '@/hooks/useColorScheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -18,6 +19,14 @@ export default function RootLayout() {
   });
   const [token, setToken] = useState(null);
   const [isAppReady, setAppReady] = useState(false);
+  
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true, // crucial for showing alerts while app is in foreground
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
 
   // Load access token and mark app as ready
   useEffect(() => {
@@ -44,11 +53,11 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false, animation:'ios' }}>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-        <Stack.Screen name="(complaint)" options={{ headerShown: false }} />
+      <Stack screenOptions={{headerShown: false, animation: 'ios'}}>
+        <Stack.Screen name="index" options={{headerShown: false}} />
+        <Stack.Screen name="(auth)" options={{headerShown: false}} />
+        <Stack.Screen name="(drawer)" options={{headerShown: false}} />
+        <Stack.Screen name="(complaint)" options={{headerShown: false}} />
         <Stack.Screen name="+not-found" />
       </Stack>
     </ThemeProvider>

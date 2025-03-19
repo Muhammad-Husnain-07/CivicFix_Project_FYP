@@ -126,14 +126,6 @@ function Demos() {
   return (
     <Wrapper>
       <Heading>Theme Settings</Heading>
-
-      <Box px={6} my={3}>
-        <Alert icon={false} severity="info">
-          <strong>Hello!</strong> Select your style below. Choose the ones that
-          best fits your needs.
-        </Alert>
-      </Box>
-
       <Box px={6} my={3}>
         <Grid container spacing={3}>
           <Demo title="Dark" themeVariant={THEMES.DARK} />

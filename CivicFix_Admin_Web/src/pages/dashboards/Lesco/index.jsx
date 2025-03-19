@@ -26,7 +26,7 @@ const Typography = styled(MuiTypography)(spacing);
   color: ${(props) => props.theme.palette.primary.main};
 `;
 
-function Lesco({ theme }) {
+function LESCO({ theme }) {
   const [filter, setFilter] = useState({
     label: "Last 7 Days",
     value: "last7days",
@@ -107,4 +107,4 @@ function Lesco({ theme }) {
   );
 }
 
-export default Lesco;
+export default LESCO;

@@ -82,7 +82,7 @@ const ComplaintForm = () => {
   }, [error, success]);
 
   return openCamera ? (
-    <Camera onSubmit={(photo) => {console.log('photo', photo); setImage(photo); setOpenCamera(false);}} />
+    <Camera onSubmit={(photo) => {setImage(photo); setOpenCamera(false);}} />
   ) : (
     <ThemedView style={styles.container}>
        {image && <Image source={{uri: image}} style={styles.imagePreview} />}

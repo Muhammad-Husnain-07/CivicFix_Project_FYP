@@ -36,13 +36,12 @@ const Wrapper = styled(Paper)`
 
 const Auth = ({ children }) => {
   const navigate = useNavigate();
-  const access_token = localStorage.getItem("access_token");
   useEffect(() => {
     const isAuthPage = ["/admin-sign-in", "/sub-admin-sign-in"].includes(
       window.location.pathname
     );
 
-    if (!access_token && !isAuthPage) {
+    if (!localStorage.getItem("access_token") && !isAuthPage) {
       navigate("/admin-sign-in");
     }
   }, [navigate]);

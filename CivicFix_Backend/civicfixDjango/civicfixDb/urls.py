@@ -12,15 +12,15 @@ urlpatterns = [
     path('api/users/create-complaint', ComplaintViewSet.as_view({'post': 'createComplaint'}) ,name='create-complaint'),
     path('api/users/detect-complaint-type', ComplaintViewSet.as_view({'post': 'detectComplaintType'}) ,name='detect-complaint-type'),
     path('api/complaints/<int:pk>', ComplaintDetailView.as_view(), name='complaint-detail'),
-     path('api/complaints/<int:pk>/update', ComplaintUpdateView.as_view(), name='complaint-update'),
-     path('api/complaints', ComplaintListView.as_view(), name='complaint-list'),
+    path('api/complaints/<int:pk>/update', ComplaintUpdateView.as_view(), name='complaint-update'),
+    path('api/complaints', ComplaintListView.as_view(), name='complaint-list'),
     
     # JWT Token Endpoints
     path('api/user/login', ObtainTokenView.as_view(), name='obtain_token'),
     path('api/team/login', ObtainTokenTeamView.as_view(), name='obtain_token'),
     path('api/token/refresh', RefreshTokenView.as_view(), name='token_refresh'),
-    path('api/admin/login', AdminLoginView.as_view(), name='admin-login'),
-    path('api/subadmin/login', SubAdminLoginView.as_view(), name='subadmin-login'),
+    path('api/admin/login', ObtainTokenAdminView.as_view(), name='admin-login'),
+    path('api/subadmin/login', ObtainTokenSubAdminView.as_view(), name='subadmin-login'),
     
     # URL
     path('api/teamusers-available', TeamUserWithoutTeamListView.as_view(), name='teamuser-without-team'),

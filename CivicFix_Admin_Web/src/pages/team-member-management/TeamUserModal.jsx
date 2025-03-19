@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -8,14 +8,23 @@ import {
   IconButton,
   Grid,
   Button,
+  FormHelperText,
+  Snackbar,
 } from "@mui/material";
 import { X } from "lucide-react";
 import apiClient from "../../utils/axiosConfig";
+import Toast from "../../components/snackbar/Toast";
 
 const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
   const [departments, setDepartments] = React.useState([]);
   const [isUpdate, setIsUpdate] = React.useState(rowData?.id ? true : false);
   const [state, setState] = React.useState({
+    name: "",
+    phone: "",
+    email: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState({
     name: "",
     phone: "",
     email: "",
@@ -27,9 +36,38 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
       ...state,
       [event.target.name]: event.target.value,
     });
+    setErrors({
+      ...errors,
+      [event.target.name]: "",
+    });
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!state.name) {
+      newErrors.name = "Name is required";
+    }
+    if (!state.phone) {
+      newErrors.phone = "Phone is required";
+    }
+    if (!state.email) {
+      newErrors.email = "Email is required";
+    }
+    if (!state.password && !isUpdate) {
+      newErrors.password = "Password is required";
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return false;
+    }
+    return true;
   };
 
   const handleSubmitForm = () => {
+    if (!validate()) {
+      Toast("Please fill in all required fields", "warning");
+      return;
+    }
     const dataToSubmit = { ...state };
     try {
       if (isUpdate) {
@@ -38,26 +76,31 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
           .then((response) => {
             getTeamUsers();
             handleCloseModal();
+            Toast("User updated successfully", "success");
           })
           .catch((error) => {
             console.log(error);
+            Toast("Error updating user", "error");
           });
       } else {
         apiClient
           .post("/teamusers/create", {
             ...dataToSubmit,
-            department:  localStorage.getItem("department_id"),
+            department: localStorage.getItem("department_id"),
           })
           .then((response) => {
             getTeamUsers();
             handleCloseModal();
+            Toast("User created successfully", "success");
           })
           .catch((error) => {
             console.log(error);
+            Toast("Error creating user", "error");
           });
       }
     } catch (error) {
       console.log(error);
+      Toast("Error creating user", "error");
     }
   };
 
@@ -118,6 +161,8 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
           name="name"
           value={state.name}
           onChange={handleChange}
+          error={errors.name ? true : false}
+          helperText={errors.name}
         />
         <TextField
           margin="dense"
@@ -128,6 +173,8 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
           name="phone"
           value={state.phone}
           onChange={handleChange}
+          error={errors.phone ? true : false}
+          helperText={errors.phone}
         />
         <TextField
           margin="dense"
@@ -138,6 +185,8 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
           name="email"
           value={state.email}
           onChange={handleChange}
+          error={errors.email ? true : false}
+          helperText={errors.email}
         />
         {!isUpdate && (
           <TextField
@@ -149,6 +198,8 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
             name="password"
             value={state.password}
             onChange={handleChange}
+            error={errors.password ? true : false}
+            helperText={errors.password}
           />
         )}
       </DialogContent>
@@ -165,3 +216,4 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
 };
 
 export default TeamModal;
+

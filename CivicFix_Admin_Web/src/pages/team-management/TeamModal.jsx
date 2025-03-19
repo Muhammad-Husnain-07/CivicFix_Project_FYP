@@ -10,9 +10,11 @@ import {
   Button,
   MenuItem,
   Autocomplete,
+  FormHelperText,
 } from "@mui/material";
 import { X } from "lucide-react";
 import apiClient from "../../utils/axiosConfig";
+import Toast from "../../components/snackbar/Toast";
 
 const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
   const [isUpdate, setIsUpdate] = useState(false);
@@ -21,6 +23,10 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
   const [state, setState] = useState({
     name: "",
     team_members: [],
+  });
+  const [errors, setErrors] = useState({
+    name: "",
+    team_members: "",
   });
 
   const handleChange = (event) => {
@@ -31,6 +37,16 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
   };
 
   const handleSubmitForm = () => {
+    if (!state.name) {
+      setErrors({ ...errors, name: "Team name is required" });
+      Toast("Team name is required", "warning");
+      return;
+    }
+    if (!state.team_members.length) {
+      setErrors({ ...errors, team_members: "At least one team member is required" });
+      Toast("At least one team member is required", "warning");
+      return;
+    }
     const dataToSubmit = { ...state };
     console.log(dataToSubmit);
     try {
@@ -40,9 +56,11 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
           .then(() => {
             getTeamUsers();
             handleCloseModal();
+            Toast("Team updated successfully", "success");
           })
           .catch((error) => {
             console.log(error);
+            Toast("Error updating team", "error");
           });
       } else {
         apiClient
@@ -53,13 +71,16 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
           .then(() => {
             getTeamUsers();
             handleCloseModal();
+            Toast("Team created successfully", "success");
           })
           .catch((error) => {
             console.log(error);
+            Toast("Error creating team", "error");
           });
       }
     } catch (error) {
       console.log(error);
+      Toast("Error creating team", "error");
     }
   };
 
@@ -136,6 +157,8 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
               name="name"
               value={state.name}
               onChange={handleChange}
+              error={errors.name ? true : false}
+              helperText={errors.name}
             />
           </Grid>
           <Grid item xs={12}>
@@ -156,6 +179,8 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
                   variant="outlined"
                   label="Team Members"
                   placeholder="Team Members"
+                  error={errors.team_members ? true : false}
+                  helperText={errors.team_members}
                 />
               )}
               value={state.team_members.map((id) => ({
@@ -179,3 +204,4 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
 };
 
 export default TeamModal;
+

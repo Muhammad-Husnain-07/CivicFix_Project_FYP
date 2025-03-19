@@ -43,7 +43,7 @@ function NavbarUserDropdown() {
     const theme = localStorage.getItem("theme");
     localStorage.clear();
     localStorage.setItem("theme", theme);
-    navigate("/");
+    navigate("/admin-sign-in");
   };
 
   return (
@@ -65,7 +65,10 @@ function NavbarUserDropdown() {
             }}
             variant="dot"
           >
-            <Avatar alt={"Admin"} src="/static/img/avatars/avatar-2.jpg" />
+            <Avatar
+              alt={"Admin"}
+              src={`https://ui-avatars.com/api/?name=${localStorage.getItem("username")}&background=2196f3&color=fff`}
+            />
           </AvatarBadge>
         </IconButton>
       </Tooltip>
