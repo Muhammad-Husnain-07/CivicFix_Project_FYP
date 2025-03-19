@@ -1,8 +1,8 @@
 import React from "react";
-import { useRoutes } from "react-router-dom";
 import { Provider } from "react-redux";
 import { HelmetProvider, Helmet } from "react-helmet-async";
 import { CacheProvider } from "@emotion/react";
+import { SnackbarProvider } from "notistack";
 
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -33,9 +33,11 @@ function App({ emotionCache = clientSideEmotionCache }) {
         />
         <Provider store={store}>
           <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <MuiThemeProvider theme={createTheme(theme)}>
-              {content}
-            </MuiThemeProvider>
+            <SnackbarProvider maxSnack={3}>
+              <MuiThemeProvider theme={createTheme(theme)}>
+                {content}
+              </MuiThemeProvider>
+            </SnackbarProvider>
           </LocalizationProvider>
         </Provider>
       </HelmetProvider>
@@ -44,3 +46,4 @@ function App({ emotionCache = clientSideEmotionCache }) {
 }
 
 export default App;
+

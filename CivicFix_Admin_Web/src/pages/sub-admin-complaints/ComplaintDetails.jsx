@@ -18,11 +18,14 @@ import {
   InputLabel,
   IconButton,
   CardActions,
+  Snackbar,
+  FormHelperText,
 } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import apiClient from "../../utils/axiosConfig";
 import CloseIcon from "@mui/icons-material/Close";
-import { Button } from "@mui/material";
+import Toast from "../../components/snackbar/Toast";
+import { Help } from "@mui/icons-material";
 
 const style = {
   position: "absolute",
@@ -48,7 +51,7 @@ const renderDetail = (label, value, isChip = false) => (
         color={
           value?.toLowerCase() === "pending"
             ? "warning"
-            : value?.toLowerCase() === "in_progress"
+            : value?.toLowerCase() === "in progress"
             ? "info"
             : value?.toLowerCase() === "resolved"
             ? "success"
@@ -76,18 +79,24 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams }) => {
   };
 
   const handleAssign = async () => {
+    if (!assignedTeamId) {
+      Toast("Please select a team before assigning", "warning");
+      return;
+    }
     setLoading(true);
     try {
-      await apiClient.put(`/complaints/${selectedRow.complaint_id}/update/`, {
+      await apiClient.put(`/complaints/${selectedRow.complaint_id}/update`, {
         assigned_team_id: assignedTeamId
           ? assignedTeamId
           : selectedRow.assigned_team_id || null,
-        status: "pending",
+        status: "PENDING",
         resolved_status: null,
       });
       setOpen(false);
+      Toast("Complaint assigned successfully", "success");
     } catch (error) {
       console.error(error);
+      Toast("Failed to assign complaint", "error");
     } finally {
       setLoading(false);
     }
@@ -150,9 +159,10 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams }) => {
                 alt="Complaint Image"
                 sx={{
                   width: "100%",
-                  height: "auto",
+                  height: "350px",
                   borderRadius: "8px",
                   boxShadow: 3,
+                  objectFit: "contain",
                 }}
               />
             </Grid>
@@ -170,12 +180,16 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams }) => {
                 defaultValue={selectedRow.assigned_team_id}
                 onChange={handleChange}
               >
-                {teams.map((team) => (
-                  <MenuItem key={team.id} value={team.id}>
-                    {team.name}
-                  </MenuItem>
-                ))}
+                {(
+                  teams.map((team) => (
+                    <MenuItem key={team.id} value={team.id}>
+                      {team.name}
+                    </MenuItem>
+                  ))
+                )}
               </Select>
+              <FormHelperText sx={{ color: "error.main" }} >No teams available. Please create a team first.
+              </FormHelperText>
             </FormControl>
 
             <LoadingButton
@@ -184,6 +198,7 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams }) => {
               onClick={handleAssign}
               loading={loading}
               sx={{ alignSelf: "center" }}
+              disabled={selectedRow?.status !== "PENDING"}
             >
               Assign Team
             </LoadingButton>
@@ -201,3 +216,4 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams }) => {
 };
 
 export default ComplaintDetails;
+

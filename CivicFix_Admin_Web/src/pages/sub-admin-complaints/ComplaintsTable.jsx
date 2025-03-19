@@ -72,7 +72,7 @@ const ComplaintsTable = ({ theme }) => {
         const response = await apiClient.get("/teams/list");
         const data = response;
         if (data) {
-          setTeams(data);
+          setTeams(data?.filter((team) => team.department === localStorage.getItem("department_id")));
         }
       } catch (error) {
         console.error("Error fetching data: ", error);
@@ -136,7 +136,7 @@ const ComplaintsTable = ({ theme }) => {
               color={
                 value?.toLowerCase() === "pending"
                   ? "warning"
-                  : value?.toLowerCase() === "in_progress"
+                  : value?.toLowerCase() === "in progress"
                   ? "info"
                   : value?.toLowerCase() === "resolved"
                   ? "success"
@@ -154,7 +154,7 @@ const ComplaintsTable = ({ theme }) => {
         filter: true,
         sort: false,
         customBodyRender: (value, tableMeta, updateValue) => {
-          return teams?.find((team) => team.id === value)?.name;
+          return teams?.find((team) => team.id === value)?.name || "N/A";
         }
       },
     },
@@ -169,14 +169,14 @@ const ComplaintsTable = ({ theme }) => {
             <Chip
               label={value}
               color={
-                value?.toLowerCase() === "closed"
-                  ? "success"
-                  : value?.toLowerCase() === "completed"
-                  ? "error"
-                  : "warning"
+                value?.toLowerCase() === "completed"
+              ? "success"
+              : value?.toLowerCase() === "closed"
+              ? "error"
+              : "warning"
               }
             />
-          ) : null;
+          ) : "N/A";
         },
       },
     },

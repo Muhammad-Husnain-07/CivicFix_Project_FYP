@@ -68,7 +68,7 @@ const BrandChip = styled(Chip)`
 const Sidebar = ({ items, showFooter = true, ...rest }) => {
   return (
     <Drawer variant="permanent" {...rest}>
-      <Brand component={NavLink} to="/">
+      <Brand component={NavLink} to="/dashboard">
         <BrandIcon />{" "}
         <Box ml={1}>
           CivicFix <BrandChip label="version 0.0.1" />

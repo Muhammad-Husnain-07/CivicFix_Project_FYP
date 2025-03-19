@@ -18,6 +18,8 @@ import DashboardItems from "../components/sidebar/dashboardItems";
 import Sidebar from "../components/sidebar/Sidebar";
 import Footer from "../components/Footer";
 import Settings from "../components/Settings";
+import addNotification from "react-push-notification";
+import { SocketURL } from "../utils/urlBase";
 
 const drawerWidth = 258;
 
@@ -60,6 +62,7 @@ const MainContent = styled(Paper)`
 `;
 
 const Dashboard = ({ children }) => {
+   const navigate = useNavigate();
   const router = useLocation();
   const theme = useTheme();
   const isLgUp = useMediaQuery(theme.breakpoints.up("lg"));
@@ -75,6 +78,41 @@ const Dashboard = ({ children }) => {
   }, [router.pathname]);
 
   const dashboardItems = DashboardItems();
+  useEffect(() => {
+    // Request permission to display notifications
+    const requestPermission = async () => {
+      const permission = await window.Notification.requestPermission();
+      if (permission === "granted") {
+        const ws = new WebSocket(SocketURL);
+
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data)?.message;
+          if (
+            !data ||
+            !data?.sub_admins?.includes(localStorage?.getItem("username"))
+          ) {
+            return;
+          }
+
+          addNotification({
+            title: data?.title ?? "New Notification",
+            message: data?.body ?? "You have a new notification.",
+            icon: "./static/img/notification.png",
+            duration: 5000,
+            native: true, // when using native, your OS will handle theming.
+            onClick: () => navigate(data?.link ?? "/"),
+          });
+        };
+
+        return () => {
+          ws.close();
+        };
+      }
+    };
+
+    requestPermission();
+  }, []);
+
   return (
     <Root>
       <CssBaseline />

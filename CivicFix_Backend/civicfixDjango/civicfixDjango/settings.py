@@ -34,15 +34,14 @@ ALLOWED_HOSTS = []
 
 # Custom settings
 SIMPLE_JWT = {
-    'USER_ID_FIELD': 'id',  # Use `id` as the primary key field
+    'USER_ID_FIELD': 'id',  # Custom user ID field
     'REQUIRED_FIELDS': [],  # No additional fields are required
 }
 
 # Max file upload size
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
 
-# Auth User Model
-AUTH_USER_MODEL = 'civicfixDb.CustomUser'
+
 
 # CORS
 # CORS_ALLOWED_ORIGINS = [
@@ -57,6 +56,8 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
+    "daphne",  # ✅ Daphne must be FIRST for ASGI mode!
+    "channels",  # WebSocket & real-time support
     'civicfixDb',
     'rest_framework',
     'django.contrib.admin',
@@ -69,13 +70,22 @@ INSTALLED_APPS = [
     'corsheaders',
 ]
 
+ASGI_APPLICATION = "civicfixDjango.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
+
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-          'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
+     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'civicfixDb.authentication.TokenOnlyAuthentication',
+    ),
 }
 
 MIDDLEWARE = [

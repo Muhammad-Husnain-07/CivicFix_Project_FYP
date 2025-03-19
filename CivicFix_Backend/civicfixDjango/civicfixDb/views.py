@@ -22,11 +22,25 @@ from datetime import datetime
 from django.db.models import Count
 import calendar
 from dateutil.relativedelta import relativedelta
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from civicfixDb.authentication import TokenOnlyAuthentication
 
+def notify(message):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        "notifications",
+            {
+                "type": "send_notification",
+                "message": message,
+            },
+        )
 
 # Create your views here.
 class ObtainTokenView(APIView):
-    permission_classes = []  # No permission required
+    permission_classes=[]
+    authentication_classes = []
+      # No permission required
 
     def post(self, request, *args, **kwargs):
         return self.authUser(request, *args, **kwargs)
@@ -68,7 +82,9 @@ class ObtainTokenView(APIView):
         except Exception as e:
             return Response({"data": None,'message':{ "status":500,"description": f"Error occurred: {str(e)}"}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class ObtainTokenTeamView(APIView):
-    permission_classes = []  # No permission required
+    permission_classes=[]
+    authentication_classes = []
+      # No permission required
 
     def post(self, request, *args, **kwargs):
         return self.authUser(request, *args, **kwargs)
@@ -108,8 +124,96 @@ class ObtainTokenTeamView(APIView):
         except Exception as e:
             return Response({"data": None,'message':{ "status":500,"description": f"Error occurred: {str(e)}"}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class ObtainTokenAdminView(APIView):
+    permission_classes=[]
+    authentication_classes = []
+      # No permission required
+
+    def post(self, request, *args, **kwargs):
+        return self.authUser(request, *args, **kwargs)
+    
+    def authUser(self, request, *args, **kwargs):
+        # authentication required, could be set to a specific user if needed
+        body= request.body
+        data = json.loads(body)
+        username = data['username']
+        password= data['password']
+        
+        # Validate required fields
+        if not username or not password:
+            return Response({"data": None,'message':{ "status":400,"description": 'Username and Password are required.'}}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if user exists
+        user = Admin.objects.filter(username=username, password=password).first()
+        if not user:
+            return Response({"data": None,'message':{ "status":401,"description": 'Invalid username or Password.'}}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            refresh = RefreshToken()
+            refresh['id'] = user.id
+            refresh['username'] = user.username
+            refresh['role'] = 'admin'
+            data = {
+                    "username": user.username,
+                    "role":"admin",
+                    "access_token": str(refresh.access_token),
+                    "refresh_token": str(refresh)
+                }
+            return Response({
+                'data': data,
+                'message':'User authenticated successfully'
+                }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"data": None,'message':{ "status":500,"description": f"Error occurred: {str(e)}"}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ObtainTokenSubAdminView(APIView):
+    permission_classes=[]
+    authentication_classes = []
+      # No permission required
+
+    def post(self, request, *args, **kwargs):
+        return self.authUser(request, *args, **kwargs)
+    
+    def authUser(self, request, *args, **kwargs):
+        # authentication required, could be set to a specific user if needed
+        body= request.body
+        data = json.loads(body)
+        username = data['username']
+        password= data['password']
+        
+        # Validate required fields
+        if not username or not password:
+            return Response({"data": None,'message':{ "status":400,"description": 'Username and Password are required.'}}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if user exists
+        user = SubAdmin.objects.filter(username=username, password=password).first()
+        if not user:
+            return Response({"data": None,'message':{ "status":401,"description": 'Invalid username or Password.'}}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        try:
+            refresh = RefreshToken()
+            refresh['id'] = user.id
+            refresh['username'] = user.username
+            refresh['role'] = 'subadmin',
+            refresh['department'] = user.department.department_name
+            data = {
+                    "username": user.username,
+                    "role":"subadmin",
+                    "department":user.department.department_name,
+                    "access_token": str(refresh.access_token),
+                    "refresh_token": str(refresh)
+                }
+            return Response({
+                'data': data,
+                'message':'Sub Admin authenticated successfully'
+                }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"data": None,'message':{ "status":500,"description": f"Error occurred: {str(e)}"}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class RefreshTokenView(APIView):
-    permission_classes = []  # No permission required
+    permission_classes=[]
+    authentication_classes = []
+      # No permission required
 
     def post(self, request, *args, **kwargs):
         return self.refreshToken(request, *args, **kwargs)
@@ -135,7 +239,9 @@ class RefreshTokenView(APIView):
             return Response({"data": None, 'message': {"status": 500, "description": f"Error occurred: {str(e)}"}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 class UserRegisterView(viewsets.ViewSet):
-    permission_classes = []  # No permissions required
+    permission_classes=[]
+    authentication_classes = []
+      # No permissions required
 
     @action(detail=False, methods=['post'])
     def register(self, request, *args, **kwargs):
@@ -151,7 +257,7 @@ class UserRegisterView(viewsets.ViewSet):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             # Extract fields
-            fields = ['name', 'father_name', 'cnic', 'address', 'phone', 'email', 'password', 'role']
+            fields = ['name', 'father_name', 'cnic', 'address', 'phone', 'email', 'password']
             user_data = {field: data.get(field) for field in fields}
 
             # Validate required fields
@@ -185,6 +291,7 @@ class UserRegisterView(viewsets.ViewSet):
 
 class ComplaintViewSet(viewsets.ViewSet):
     permission_classes=[]
+    authentication_classes = [TokenOnlyAuthentication]
     
     @action(detail=False, methods=['post'])
     def detectComplaintType(self, request, *args, **kwargs):
@@ -318,6 +425,12 @@ class ComplaintViewSet(viewsets.ViewSet):
         serializer = ComplaintSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
+            notification_object={
+                "title": "New Complaint",
+                "body": "A new complaint has been lodged.",
+                "sub_admins": list(SubAdmin.objects.filter(department__department_name=department_name).values_list('username', flat=True)),
+            }
+            notify(notification_object)
             return Response(
                 {"data": serializer.data, "message": {"status": 200, "description": "Complaint created successfully"}},
                 status=status.HTTP_200_OK
@@ -325,12 +438,14 @@ class ComplaintViewSet(viewsets.ViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ComplaintDetailView(generics.RetrieveAPIView):
+    permission_classes=[]
     queryset = Complaint.objects.all()
     serializer_class = ComplaintSerializer
-    permission_classes=[IsAuthenticated]
+    authentication_classes = [TokenOnlyAuthentication]
     def get_queryset(self):
         user = self.request.user  # Get logged-in user
         
+        notify(notification_object)
         if user.role.role_name == "admin":
             return Complaint.objects.all()  # Admin sees all complaints
         
@@ -344,9 +459,10 @@ class ComplaintDetailView(generics.RetrieveAPIView):
             return Complaint.objects.none()  # Other users see nothing     
         
 class ComplaintUpdateView(generics.UpdateAPIView):
+    permission_classes=[]
     queryset = Complaint.objects.all()
     serializer_class = ComplaintUpdateSerializer
-    permission_classes=[]
+    authentication_classes = [TokenOnlyAuthentication]
 
     def get_object(self):
         complaint = super().get_object()
@@ -355,25 +471,41 @@ class ComplaintUpdateView(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         complaint = self.get_object()
         data = request.data
+        complaint_id = kwargs['pk']
 
         serializer = self.get_serializer(complaint, data=data, partial=True)
         if serializer.is_valid():
+            if data['status'] == "IN PROGRESS":
+                notification_object={
+                    "title": "Complaint",
+                    "body": f"Your complaint has been {data['status'].lower()}",
+                    "user_id": Complaint.objects.filter(complaint_id=complaint_id).first().user_id.id
+                }
+                notify(notification_object)
+            if data['status'] == "PENDING":
+                notification_object={
+                    "title": "New Complaint Assigned",
+                    "body": f"New Complaint has been assigned to you",
+                    "team_id":data["assigned_team_id"] 
+                }
+                notify(notification_object)
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
 
 class ComplaintListView(generics.ListAPIView):
+    permission_classes=[]
     serializer_class = ComplaintListSerializer
-    permission_classes = []
+    authentication_classes = [TokenOnlyAuthentication]
+    
 
     def get_queryset(self):
         user = self.request.user
         department_name = self.request.query_params.get('department', None)
         team_id = self.request.query_params.get('team_id', None)
         user_id =self.request.query_params.get('user_id', None)
-        
         if department_name:
-            complaints= Complaint.objects.filter(department__department_name__iexact=department_name)
+            return Complaint.objects.filter(department__department_name__iexact=department_name)
 
         if team_id:
             return Complaint.objects.filter(assigned_team_id=team_id)
@@ -387,57 +519,71 @@ class ComplaintListView(generics.ListAPIView):
 
     
 class Teamcreateview(generics.CreateAPIView):
+    permission_classes=[]
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
-    permission_classes = []
+    authentication_classes = [TokenOnlyAuthentication]
+    
 
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
 class TeamUpdateView(generics.UpdateAPIView):
+    permission_classes=[]
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
-    permission_classes = []
+    authentication_classes = [TokenOnlyAuthentication]
+    
 
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
 
 class TeamuserCreateView(generics.CreateAPIView):
+    permission_classes=[]
     queryset = Teamuser.objects.all()
     serializer_class = TeamuserSerializer
-    permission_classes = []
+    authentication_classes = [TokenOnlyAuthentication]
+    
 
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
         
 
 class TeamuserListView(generics.ListAPIView):
+    permission_classes=[]
     queryset = Teamuser.objects.all()
     serializer_class = TeamuserSerializer
-    permission_classes = []
+    authentication_classes = [TokenOnlyAuthentication]
+    
 
     def list(self, request, *args, **kwargs):    
        return super().list(request, *args, **kwargs)
 
 class TeamUserWithoutTeamListView(generics.ListAPIView):
+    permission_classes=[]
     queryset = Teamuser.objects.filter(team__isnull=True)  # Users without assigned team
     serializer_class = TeamuserSerializer
-    permission_classes = []
+    authentication_classes = [TokenOnlyAuthentication]
+    
 
 class TeamuserUpdateView( generics.UpdateAPIView):
+    permission_classes=[]
     queryset = Teamuser.objects.all()
     serializer_class = TeamuserSerializer
-    permission_classes = []
+    authentication_classes = [TokenOnlyAuthentication]
+    
 
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
         
 
 class TeamuserDeleteView( generics.DestroyAPIView):
+    permission_classes=[]
     queryset = Teamuser.objects.all()
     serializer_class = TeamuserSerializer
-    permission_classes = []
+    authentication_classes = [TokenOnlyAuthentication]
+    
 
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
@@ -446,18 +592,21 @@ class TeamuserDeleteView( generics.DestroyAPIView):
 
 class DepartmentCreateView(generics.CreateAPIView):
     permission_classes=[]
+    authentication_classes = [TokenOnlyAuthentication]
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
 
 class DepartmentListView(generics.ListAPIView):
+    permission_classes=[]
+    authentication_classes = [TokenOnlyAuthentication]
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
-    permission_classes = []
     
 class TeamListByDepartmentView(generics.ListAPIView):
+    permission_classes=[]
+    authentication_classes = [TokenOnlyAuthentication]
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
-    permission_classes = []
 
     def get_queryset(self):
         department_name = self.request.query_params.get('department_name')
@@ -466,36 +615,29 @@ class TeamListByDepartmentView(generics.ListAPIView):
             return Team.objects.filter(department=department)
         return Team.objects.all()
 
-class AdminLoginView(generics.GenericAPIView):
-    serializer_class = AdminLoginSerializer
-    permission_classes = []
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        return Response(serializer.validated_data)
-
-class SubAdminLoginView(generics.GenericAPIView):
-    serializer_class = SubAdminLoginSerializer
-    permission_classes = []
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        return Response(serializer.validated_data)
-
 class ProofOfResolutionCreateView(generics.CreateAPIView):
+    authentication_classes = [TokenOnlyAuthentication]
     queryset = ProofOfResolution.objects.all()
     serializer_class = ProofOfResolutionSerializer
-    permission_classes = []
+    permission_classes=[]
 
-    def perform_create(self, serializer):
+    def perform_create(self, request, serializer):
+        complaint_id = request.data['complaint_id']
+        status = request.data['status']
         serializer.save()
+        complaint = Complaint.objects.get(complaint_id=complaint_id)
+        notification_object={
+                "title": "Complaint " + status,
+                "body": f"Complaint has been {status.lower()}",
+                "user_id": complaint.user_id
+            }
+        notify(notification_object)
         return Response({"message": "Proof of resolution added successfully"})
 
 class ProofOfResolutionListView(generics.ListAPIView):
     serializer_class = ProofOfResolutionSerializer
-    permission_classes = []
+    authentication_classes = [TokenOnlyAuthentication]
+    permission_classes=[]
 
     def get_queryset(self):
         complaint_id = self.kwargs['complaint_id']
@@ -503,7 +645,8 @@ class ProofOfResolutionListView(generics.ListAPIView):
 
 # Charts Stats
 class ComplaintStatsView(generics.ListAPIView):
-    permission_classes = []
+    authentication_classes = [TokenOnlyAuthentication]
+    permission_classes=[]
     
     def get_queryset(self):
         return Complaint.objects.all()
@@ -545,7 +688,8 @@ class ComplaintStatsView(generics.ListAPIView):
         return Response(stats)
     
 class ComplaintBarChartStatsView(generics.ListAPIView):
-    permission_classes = []
+    authentication_classes = [TokenOnlyAuthentication]
+    permission_classes=[]
 
     def get_queryset(self):
         return Complaint.objects.all()
@@ -586,7 +730,8 @@ class ComplaintBarChartStatsView(generics.ListAPIView):
 
     
 class ComplaintPieChartStatsView(generics.ListAPIView):
-    permission_classes = []
+    authentication_classes = [TokenOnlyAuthentication]
+    permission_classes=[]
 
     def get(self, request, *args, **kwargs):
         department = request.query_params.get('department', None)
@@ -606,7 +751,8 @@ class ComplaintPieChartStatsView(generics.ListAPIView):
         return Response(data)
 
 class ComplaintLineChartStatsView(generics.ListAPIView):
-    permission_classes = []
+    authentication_classes = [TokenOnlyAuthentication]
+    permission_classes=[]
 
     def get(self, request, *args, **kwargs):
         department = request.query_params.get("department", None)
@@ -641,7 +787,8 @@ class ComplaintLineChartStatsView(generics.ListAPIView):
 
 
 class ComplaintYearlyStatsView(generics.ListAPIView):
-    permission_classes = []
+    authentication_classes = [TokenOnlyAuthentication]
+    permission_classes=[]
 
     def get(self, request, *args, **kwargs):
         today = now()
@@ -679,7 +826,8 @@ class ComplaintYearlyStatsView(generics.ListAPIView):
 
 
 class DepartmentComplaintStatsView(generics.ListAPIView):
-    permission_classes = []
+    authentication_classes = [TokenOnlyAuthentication]
+    permission_classes=[]
 
     def get(self, request, *args, **kwargs):
         departments = Department.objects.all()
@@ -699,8 +847,8 @@ class DepartmentComplaintStatsView(generics.ListAPIView):
         return Response(stats)
 
 class DepartmentMonthlyStatsView(generics.ListAPIView):
-    permission_classes = []
-
+    authentication_classes = [TokenOnlyAuthentication]
+    permission_classes=[]
     def get(self, request, *args, **kwargs):
         current_month = now().month
         current_year = now().year

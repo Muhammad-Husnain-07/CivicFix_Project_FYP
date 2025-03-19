@@ -20,7 +20,7 @@ import Page404 from "./pages/auth/Page404";
 import Default from "./pages/dashboards/Default";
 import AdminComplaints from "./pages/admin-complaints";
 import TeamManagement from "./pages/team-management";
-import Lesco from "./pages/dashboards/Lesco";
+import LESCO from "./pages/dashboards/LESCO";
 import SNGPL from "./pages/dashboards/SNGPL";
 import SubAdminComplaints from "./pages/sub-admin-complaints";
 import TeamMemberManagement from "./pages/team-member-management";
@@ -32,7 +32,7 @@ const getDashboardRoutes = (department) => [
     children: [
       {
         path: "",
-        element: department === "LESCO" ? <Lesco /> : <SNGPL />,
+        element: department === "LESCO" ? <LESCO /> : <SNGPL />,
       },
     ],
   },
