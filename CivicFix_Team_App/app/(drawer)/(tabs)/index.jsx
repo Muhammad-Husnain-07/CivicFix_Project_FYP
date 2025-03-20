@@ -25,7 +25,7 @@ export default function HomeScreen() {
             id: item?.complaint_id,
             title: `${item?.department} - ${item?.complaint_type} (ID: ${item?.complaint_id})`,
             ...item,
-          }))
+          })),
         );
       } else {
         setComplaints([]);
@@ -59,24 +59,19 @@ export default function HomeScreen() {
     <Loader />
   ) : (
     <ThemedView style={styles.container}>
-      {complaints?.length === 0 ? (
-        <>
-          <ThemedView style={styles.titleContainer}>
-            <ThemedText type="title">Welcome!</ThemedText>
-            <ThemedText type="default">No Complaints Assigned.</ThemedText>
-          </ThemedView>
-        </>
-      ) : (
-        <ScrollView
-          style={{height: '100%', width: '100%'}}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-            />
-          }
-        >
-          {complaints?.map(item => (
+      <ScrollView
+        style={{height: '100%', width: '100%'}}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+      >
+        {complaints?.length === 0 ? (
+          <>
+            <ThemedView style={styles.titleContainer}>
+              <ThemedText type="title">Welcome!</ThemedText>
+              <ThemedText type="default">No Complaints Assigned.</ThemedText>
+            </ThemedView>
+          </>
+        ) : (
+          complaints?.map(item => (
             <Pressable
               key={item?.id}
               onPress={() => {
@@ -90,9 +85,9 @@ export default function HomeScreen() {
                 <ThemedComplaintCard key={item?.id} data={item} />
               </ThemedView>
             </Pressable>
-          ))}
-        </ScrollView>
-      )}
+          ))
+        )}
+      </ScrollView>
     </ThemedView>
   );
 }
@@ -125,4 +120,3 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
 });
-
