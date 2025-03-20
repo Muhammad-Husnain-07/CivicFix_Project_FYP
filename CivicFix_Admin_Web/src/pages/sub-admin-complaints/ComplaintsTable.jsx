@@ -72,7 +72,7 @@ const ComplaintsTable = ({ theme }) => {
         const response = await apiClient.get("/teams/list");
         const data = response;
         if (data) {
-          setTeams(data?.filter((team) => team.department === localStorage.getItem("department_id")));
+          setTeams(data?.filter((team) => team.department == localStorage.getItem("department_id")));
         }
       } catch (error) {
         console.error("Error fetching data: ", error);

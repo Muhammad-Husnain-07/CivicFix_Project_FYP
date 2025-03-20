@@ -180,16 +180,17 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams }) => {
                 defaultValue={selectedRow.assigned_team_id}
                 onChange={handleChange}
               >
-                {(
-                  teams.map((team) => (
-                    <MenuItem key={team.id} value={team.id}>
-                      {team.name}
-                    </MenuItem>
-                  ))
-                )}
+                {teams.map((team) => (
+                  <MenuItem key={team.id} value={team.id}>
+                    {team.name}
+                  </MenuItem>
+                ))}
               </Select>
-              <FormHelperText sx={{ color: "error.main" }} >No teams available. Please create a team first.
-              </FormHelperText>
+              {teams.length === 0 && (
+                <FormHelperText sx={{ color: "error.main" }}>
+                  No teams available. Please create a team first.
+                </FormHelperText>
+              )}
             </FormControl>
 
             <LoadingButton
@@ -216,4 +217,3 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams }) => {
 };
 
 export default ComplaintDetails;
-
