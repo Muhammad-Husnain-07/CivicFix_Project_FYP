@@ -8,10 +8,8 @@ urlpatterns = [
     path('api/users/register', UserRegisterView.as_view({'post': 'register'}) ,name='user-register'),
     
     # Complaint Endpoints
-    path('api/users/get-complaints', ComplaintViewSet.as_view({'get': 'getComplaintsByUserId'}) ,name='get-complaints'),
     path('api/users/create-complaint', ComplaintViewSet.as_view({'post': 'createComplaint'}) ,name='create-complaint'),
     path('api/users/detect-complaint-type', ComplaintViewSet.as_view({'post': 'detectComplaintType'}) ,name='detect-complaint-type'),
-    path('api/complaints/<int:pk>', ComplaintDetailView.as_view(), name='complaint-detail'),
     path('api/complaints/<int:pk>/update', ComplaintUpdateView.as_view(), name='complaint-update'),
     path('api/complaints', ComplaintListView.as_view(), name='complaint-list'),
     
