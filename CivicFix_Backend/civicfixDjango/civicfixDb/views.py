@@ -381,27 +381,6 @@ class ComplaintViewSet(viewsets.ViewSet):
                 "message": {"status": 500, "description": f"Inference or OCR error: {str(e)}"}
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    
-    @action(detail=False, methods=['get'])
-    def getComplaintsByUserId(self, request, *args, **kwargs):
-        user_id = request.query_params.get('user_id')
-        if not user_id:
-            return Response(
-                {"data": None, 'message': {"status": 400, "description": 'User ID is required.'}},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        try:
-            complaints = Complaint.objects.filter(user_id=int(user_id))
-            serializer = ComplaintSerializer(complaints, many=True)
-            return Response({
-                'data': serializer.data,
-                "message": {"status": 200, "description": "Complaints fetched successfully"}
-            })
-        except Exception as e:
-            return Response(
-                {"data": None, 'message': {"status": 500, "description": f"Error occurred: {str(e)}"}},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
 
     
     @action(detail=False, methods=['post'])
@@ -435,28 +414,7 @@ class ComplaintViewSet(viewsets.ViewSet):
                 {"data": serializer.data, "message": {"status": 200, "description": "Complaint created successfully"}},
                 status=status.HTTP_200_OK
             )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class ComplaintDetailView(generics.RetrieveAPIView):
-    permission_classes=[]
-    queryset = Complaint.objects.all()
-    serializer_class = ComplaintSerializer
-    authentication_classes = [TokenOnlyAuthentication]
-    def get_queryset(self):
-        user = self.request.user  # Get logged-in user
-        
-        notify(notification_object)
-        if user.role.role_name == "admin":
-            return Complaint.objects.all()  # Admin sees all complaints
-        
-        elif user.role.role_name == "subadmin":
-            return Complaint.objects.filter(department=user.department)  # Subadmin sees department complaints
-        
-        elif user.role.role_name == "team_member":
-            return Complaint.objects.filter(assigned_to__team_memeber=user)  # Team members see assigned complaints
-        
-        else:
-            return Complaint.objects.none()  # Other users see nothing     
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
         
 class ComplaintUpdateView(generics.UpdateAPIView):
     permission_classes=[]
