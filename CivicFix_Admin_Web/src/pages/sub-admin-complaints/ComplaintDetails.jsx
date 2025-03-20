@@ -68,7 +68,7 @@ const renderDetail = (label, value, isChip = false) => (
   </Stack>
 );
 
-const ComplaintDetails = ({ selectedRow, open, setOpen, teams }) => {
+const ComplaintDetails = ({ selectedRow, open, setOpen, teams,fetchData }) => {
   const [assignedTeamId, setAssignedTeamId] = useState(
     selectedRow?.assigned_team_id
   );
@@ -93,6 +93,7 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams }) => {
         resolved_status: null,
       });
       setOpen(false);
+      fetchData();
       Toast("Complaint assigned successfully", "success");
     } catch (error) {
       console.error(error);

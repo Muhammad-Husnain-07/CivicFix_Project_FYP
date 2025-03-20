@@ -577,20 +577,20 @@ class ProofOfResolutionCreateView(generics.CreateAPIView):
     authentication_classes = [TokenOnlyAuthentication]
     queryset = ProofOfResolution.objects.all()
     serializer_class = ProofOfResolutionSerializer
-    permission_classes=[]
+    permission_classes = []
 
-    def perform_create(self, request, serializer):
-        complaint_id = request.data['complaint_id']
-        status = request.data['status']
+    def perform_create(self, serializer):
         serializer.save()
+        complaint_id = self.request.data['complaint_id']
+        status = self.request.data['status']
         complaint = Complaint.objects.get(complaint_id=complaint_id)
-        notification_object={
-                "title": "Complaint " + status,
-                "body": f"Complaint has been {status.lower()}",
-                "user_id": complaint.user_id
-            }
+        
+        notification_object = {
+            "title": "Complaint " + status,
+            "body": f"Complaint has been {status.lower()}",
+            "user_id": complaint.user_id
+        }
         notify(notification_object)
-        return Response({"message": "Proof of resolution added successfully"})
 
 class ProofOfResolutionListView(generics.ListAPIView):
     serializer_class = ProofOfResolutionSerializer

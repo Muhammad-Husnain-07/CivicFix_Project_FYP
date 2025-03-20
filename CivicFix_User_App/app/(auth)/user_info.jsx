@@ -109,11 +109,10 @@ export default UserInfoScreen = () => {
       },
     };
     try {
-      const res = await apiClient.post('/users/register', body);
-      if (res?.data?.status === 200) {
-        ToastAndroid.show('User registered successfully', ToastAndroid.SHORT);
-        navigation.reset({index: 0, routes: [{name: 'login'}]});
-      }
+      await apiClient.post('/users/register', body);
+
+      ToastAndroid.show('User registered successfully', ToastAndroid.SHORT);
+      navigation.reset({index: 0, routes: [{name: 'login'}]});
     } catch (err) {
       ToastAndroid.show(err?.response?.data?.message, ToastAndroid.SHORT);
       console.log(err);
