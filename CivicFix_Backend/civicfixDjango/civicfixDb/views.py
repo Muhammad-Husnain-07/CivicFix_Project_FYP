@@ -598,7 +598,7 @@ class ProofOfResolutionListView(generics.ListAPIView):
     permission_classes=[]
 
     def get_queryset(self):
-        complaint_id = self.kwargs['complaint_id']
+        complaint_id = self.request.query_params.get('complaint_id')
         return ProofOfResolution.objects.filter(complaint__complaint_id=complaint_id)
 
 # Charts Stats
