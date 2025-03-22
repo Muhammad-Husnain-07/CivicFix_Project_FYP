@@ -41,44 +41,45 @@ const ComplaintsTable = ({ theme }) => {
   const [open, setOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState({});
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await apiClient.get("/complaints");
-        const data = response;
-        if (data) {
-          setRows(
-            data.map((row) => {
-              return {
-                ...row,
-                submission_date: new Date(row.submission_date).toLocaleDateString(),
-              };
-            })
-          );
-          setLoading(false);
-        } else {
-          setLoading(false);
-          setRows([]);
-        }
-      } catch (error) {
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.get("/complaints");
+      const data = response;
+      if (data) {
+        setRows(
+          data.map((row) => {
+            return {
+              ...row,
+              submission_date: new Date(row.submission_date).toLocaleDateString(),
+            };
+          })
+        );
         setLoading(false);
-        console.error("Error fetching data: ", error);
+      } else {
+        setLoading(false);
+        setRows([]);
       }
-    };
-
-    const getTeams = async () => {
-      try {
-        const response = await apiClient.get("/teams/list");
-        const data = response;
-        if (data) {
-          setTeams(data);
-        }
-      } catch (error) {
-        console.error("Error fetching data: ", error);
-      }
-
+    } catch (error) {
+      setLoading(false);
+      console.error("Error fetching data: ", error);
     }
+  };
+
+  const getTeams = async () => {
+    try {
+      const response = await apiClient.get("/teams/list");
+      const data = response;
+      if (data) {
+        setTeams(data);
+      }
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    }
+
+  }
+
+  useEffect(() => {
     getTeams();
     fetchData();
   }, []);
