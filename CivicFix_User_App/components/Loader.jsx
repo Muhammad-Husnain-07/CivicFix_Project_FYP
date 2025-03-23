@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, Easing } from 'react-native';
+import { View, StyleSheet, Animated, Easing, Dimensions } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor'; // Assuming you're using a theme hook
 
 const Loader = () => {
@@ -91,6 +91,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    height:Dimensions.get('window').height,
+    width:Dimensions.get('window').width
   },
   outerCircle: {
     width: 80,

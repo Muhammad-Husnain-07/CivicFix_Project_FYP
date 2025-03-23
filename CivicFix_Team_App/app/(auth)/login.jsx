@@ -46,11 +46,12 @@ export default LoginScreen = () => {
     try {
       setLoader(true);
       await axios
-        .post(BASE_URL + '/team/login', body, {
+        .post(BASE_URL + '/team/login?format=json', body, {
           headers: {'Content-Type': 'application/json'},
         })
         .then(res => {
           const user = res.data.data;
+          console.log(res)
           storeData('access_token', user.access_token);
           storeData('refresh_token', user.refresh_token);
           storeData('user_data', user);
@@ -59,9 +60,9 @@ export default LoginScreen = () => {
           setLoader(false);
         });
     } catch (err) {
-      setLoader(false);
-      ToastAndroid.show('Login failed', ToastAndroid.SHORT);
       console.log(err);
+      setLoader(false);
+      ToastAndroid.show("Login failed", ToastAndroid.SHORT);
     }
   };
 

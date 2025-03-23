@@ -5,15 +5,28 @@ import {ThemedText} from '@/components/ThemedText';
 import {ThemedView} from '@/components/ThemedView';
 import apiClient from '@/utils/axiosConfig';
 import {useLocalSearchParams, useNavigation} from 'expo-router';
-import React from 'react';
-import {StyleSheet, Image, Modal, TouchableOpacity, ScrollView, Alert, Linking} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {
+  StyleSheet,
+  Image,
+  Modal,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  Linking,
+  Dimensions,
+} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
+import Loader from '@/components/Loader';
+import {Ionicons} from '@expo/vector-icons';
 
 const ViewComplaintScreen = () => {
   const navigation = useNavigation();
   const params = useLocalSearchParams();
-  const complaint = params;
+  const [complaint, setComplaint] = React.useState({});
+  const complaintId = params?.id;
   const [modalVisible, setModalVisible] = React.useState(false);
+  const [loader, setLoader] = React.useState(true);
 
   const getStatusBadge = status => {
     const lowerStatus = status?.toLowerCase();
@@ -55,76 +68,140 @@ const ViewComplaintScreen = () => {
     ]);
   };
 
+  useEffect(() => {
+    const fetchComplaint = async () => {
+      try {
+        const res = await apiClient(`/complaints/${complaintId}`);
+        if (!res) return;
+        setComplaint(res);
+        setLoader(false);
+      } catch (err) {
+        console.log(err);
+        setLoader(false);
+      }
+    };
+    fetchComplaint();
+  }, []);
+
   const openGoogleMaps = () => {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${complaint.latitude},${complaint.longitude}`;
     Linking.openURL(url).catch(err => console.error('Failed to open Google Maps', err));
   };
 
+  const callUser = () => {
+    Linking.openURL(`tel:${complaint?.user_phone_number}`).catch(err =>
+      console.error('Failed to open phone app', err),
+    );
+  };
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <ThemedDetailCard style={styles.card}>
-        <ThemedView style={styles.imageContainer}>
-          <TouchableOpacity onPress={() => setModalVisible(true)}>
-            {complaint?.upload_image ? (
-              <Image
-                source={{uri: 'data:image/jpeg;base64,' + complaint.upload_image}}
-                style={styles.imagePreview}
-              />
-            ) : (
-              <ThemedText>Image Preview</ThemedText>
-            )}
-          </TouchableOpacity>
+      {loader ? (
+        <ThemedView
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%',
+            width: '100%',
+          }}
+        >
+          <Loader />
         </ThemedView>
-
-        <ThemedView style={styles.statusContainer}>
-          <ThemedText type="heading5" style={styles.statusLabel} primaryColor>
-            Status
-          </ThemedText>
-          <ThemedBadge status={getStatusBadge(complaint?.status)} style={styles.badge}>
-            {complaint?.status}
-          </ThemedBadge>
-        </ThemedView>
-
-        <DetailRow label="Reference Number" value={complaint?.ref_number ?? 'N/A'} />
-        <DetailRow label="Complaint Category" value={complaint?.complaint_category ?? 'N/A'} />
-        <DetailRow label="Complaint Type" value={complaint?.complaint_type ?? 'N/A'} />
-        <DetailRow label="Complaint Details" value={complaint?.complaint_details ?? 'N/A'} />
-        <ThemedView style={styles.mapContainer}>
-          <TouchableOpacity onPress={openGoogleMaps}>
-            <MapView
-              style={styles.map}
-              initialRegion={{
-                latitude: parseFloat(complaint?.latitude) || 0,
-                longitude: parseFloat(complaint?.longitude) || 0,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }}
-              pointerEvents="none"
-            >
-              <Marker
-                coordinate={{
-                  latitude: parseFloat(complaint.latitude) || 0,
-                  longitude: parseFloat(complaint.longitude) || 0,
-                }}
-              />
-            </MapView>
-          </TouchableOpacity>
-        </ThemedView>
-        <Modal visible={modalVisible} transparent={true} animationType="fade">
-          <ThemedView style={styles.modalContainer}>
-            <Image
-              source={{uri: 'data:image/jpeg;base64,' + complaint.upload_image}}
-              style={styles.fullImage}
-            />
-            <ThemedButton
-              title="Close"
-              onPress={() => setModalVisible(false)}
-              style={styles.closeButton}
-            />
+      ) : (
+        <ThemedDetailCard style={styles.card}>
+          <ThemedView style={styles.imageContainer}>
+            <TouchableOpacity onPress={() => setModalVisible(true)}>
+              {complaint?.image_url ? (
+                <Image
+                  source={{uri: 'data:image/jpeg;base64,' + complaint.image_url}}
+                  style={styles.imagePreview}
+                />
+              ) : (
+                <ThemedText>Image Preview</ThemedText>
+              )}
+            </TouchableOpacity>
           </ThemedView>
-        </Modal>
-      </ThemedDetailCard>
 
+          <ThemedView style={styles.statusContainer}>
+            <ThemedText type="heading5" style={styles.statusLabel} primaryColor>
+              Status
+            </ThemedText>
+            <ThemedBadge status={getStatusBadge(complaint?.status)} style={styles.badge}>
+              {complaint?.status}
+            </ThemedBadge>
+          </ThemedView>
+
+          <DetailRow label="Reference Number" value={complaint?.ref_number ?? 'N/A'} />
+          <DetailRow label="Complaint Category" value={complaint?.complaint_category ?? 'N/A'} />
+          <DetailRow label="Complaint Type" value={complaint?.complaint_type ?? 'N/A'} />
+          <DetailRow label="Complaint Details" value={complaint?.complaint_details ?? 'N/A'} />
+          <ThemedView style={styles.mapContainer}>
+            <TouchableOpacity onPress={openGoogleMaps}>
+              <MapView
+                style={styles.map}
+                initialRegion={{
+                  latitude: parseFloat(complaint?.latitude) || 0,
+                  longitude: parseFloat(complaint?.longitude) || 0,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                }}
+                pointerEvents="none"
+              >
+                <Marker
+                  coordinate={{
+                    latitude: parseFloat(complaint.latitude) || 0,
+                    longitude: parseFloat(complaint.longitude) || 0,
+                  }}
+                />
+              </MapView>
+            </TouchableOpacity>
+          </ThemedView>
+
+          <ThemedView
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: 10,
+              borderRadius: 10,
+              backgroundColor: '#333',
+            }}
+          >
+            <Ionicons name="call" size={24} color="white" style={{marginRight: 10}} />
+            <ThemedText type="default" style={{color: 'white', flex: 1}}>
+              {complaint?.user_phone_number}
+            </ThemedText>
+            <TouchableOpacity
+              onPress={callUser}
+              style={{
+                backgroundColor: '#007AFF',
+                paddingVertical: 8,
+                paddingHorizontal: 25,
+                borderRadius: 5,
+              }}
+            >
+              <ThemedText type="default" style={{color: 'white'}}>
+                Contact User
+              </ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
+
+          <Modal visible={modalVisible} transparent={true} animationType="fade">
+            <ThemedView style={styles.modalContainer}>
+              <Image
+                source={{uri: 'data:image/jpeg;base64,' + complaint.image_url}}
+                style={styles.fullImage}
+              />
+              <ThemedButton
+                title="Close"
+                onPress={() => setModalVisible(false)}
+                style={styles.closeButton}
+              />
+            </ThemedView>
+          </Modal>
+        </ThemedDetailCard>
+      )}
       <ThemedView style={styles.buttonContainer}>
         {complaint?.status?.toLowerCase() === 'in progress' && (
           <ThemedButton
