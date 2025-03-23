@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import environ
 import os
+from datetime import timedelta
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -36,6 +37,8 @@ ALLOWED_HOSTS = []
 SIMPLE_JWT = {
     'USER_ID_FIELD': 'id',  # Custom user ID field
     'REQUIRED_FIELDS': [],  # No additional fields are required
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),  
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=30),
 }
 
 # Max file upload size

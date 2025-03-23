@@ -83,7 +83,7 @@ class ObtainTokenView(APIView):
             return Response({"data": None,'message':{ "status":500,"description": f"Error occurred: {str(e)}"}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class ObtainTokenTeamView(APIView):
     permission_classes=[]
-    authentication_classes = []
+    authentication_classes = [ ]
       # No permission required
 
     def post(self, request, *args, **kwargs):
@@ -450,6 +450,23 @@ class ComplaintUpdateView(generics.UpdateAPIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
+
+class ComplaintGetView(generics.RetrieveAPIView):
+    permission_classes = []
+    queryset = Complaint.objects.all()
+    serializer_class = ComplaintSerializer
+    authentication_classes = [TokenOnlyAuthentication]
+    lookup_field = 'pk'
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        user_phone_number = instance.user_id.phone if instance.user_id else None
+        serializer = self.get_serializer(instance)
+        data = serializer.data
+        data['user_phone_number'] = user_phone_number
+        team_member_phone_number = instance.assigned_team_id.team_members.first().phone if instance.assigned_team_id else None
+        data['team_member_phone_number'] = team_member_phone_number
+        return Response(data)
 
 class ComplaintListView(generics.ListAPIView):
     permission_classes=[]

@@ -5,15 +5,18 @@ import {ThemedText} from '@/components/ThemedText';
 import {ThemedView} from '@/components/ThemedView';
 import apiClient from '@/utils/axiosConfig';
 import {useLocalSearchParams, useNavigation} from 'expo-router';
-import React, {useEffect} from 'react';
-import {StyleSheet, Image, Modal, TouchableOpacity, ScrollView, Alert, Linking} from 'react-native';
-import MapView, {Marker} from 'react-native-maps';
+import React, {useEffect, useState} from 'react';
+import {StyleSheet, Image, Modal, TouchableOpacity, ScrollView, Linking} from 'react-native';
+import {Ionicons} from '@expo/vector-icons';
+import Loader from '@/components/Loader';
 
 const ViewComplaintScreen = () => {
   const params = useLocalSearchParams();
-  const complaint = params;
-  const [modalVisible, setModalVisible] = React.useState(false);
-  const [teams, setTeams] = React.useState([]);
+  const [complaint, setComplaint] = React.useState({});
+  const complaintId = params?.id;
+  const [modalVisible, setModalVisible] = useState(false);
+  const [teams, setTeams] = useState([]);
+  const [loader, setLoader] = useState(true);
 
   const getStatusBadge = status => {
     const lowerStatus = status?.toLowerCase();
@@ -31,10 +34,6 @@ const ViewComplaintScreen = () => {
     }
   };
 
-  const openGoogleMaps = () => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${complaint.latitude},${complaint.longitude}`;
-    Linking.openURL(url).catch(err => console.error('Failed to open Google Maps', err));
-  };
   const getTeam = async () => {
     try {
       const res = await apiClient(`/teams/list`);
@@ -45,56 +44,106 @@ const ViewComplaintScreen = () => {
   };
 
   useEffect(() => {
+    const fetchComplaint = async () => {
+      try {
+        const res = await apiClient(`/complaints/${complaintId}`);
+        if (!res) return;
+        setComplaint(res);
+        setLoader(false);
+      } catch (err) {
+        console.log(err);
+        setLoader(false);
+      }
+    };
+    fetchComplaint();
     getTeam();
   }, []);
 
+  const callUser = () => {
+    Linking.openURL(`tel:${complaint?.user_phone_number}`).catch(err =>
+      console.error('Failed to open phone app', err),
+    );
+  };
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <ThemedDetailCard style={styles.card}>
-        <ThemedView style={styles.imageContainer}>
-          <TouchableOpacity onPress={() => setModalVisible(true)}>
-            {complaint?.upload_image ? (
-              <Image
-                source={{uri: 'data:image/jpeg;base64,' + complaint.upload_image}}
-                style={styles.imagePreview}
-              />
-            ) : (
-              <ThemedText>Image Preview</ThemedText>
-            )}
-          </TouchableOpacity>
-        </ThemedView>
-
-        <ThemedView style={styles.statusContainer}>
-          <ThemedText type="heading5" style={styles.statusLabel} primaryColor>
-            Status
-          </ThemedText>
-          <ThemedBadge status={getStatusBadge(complaint?.status)} style={styles.badge}>
-            {complaint?.status}
-          </ThemedBadge>
-        </ThemedView>
-
-        <DetailRow label="Reference Number" value={complaint?.ref_number ?? 'N/A'} />
-        <DetailRow label="Complaint Category" value={complaint?.complaint_category ?? 'N/A'} />
-        <DetailRow label="Complaint Type" value={complaint?.complaint_type ?? 'N/A'} />
-        <DetailRow label="Complaint Details" value={complaint?.complaint_details ?? 'N/A'} />
-        <DetailRow
-          label="Assigned Team"
-          value={teams.find(team => team.id === complaint?.assigned_team)?.name ?? 'N/A'}
-        />
-        <Modal visible={modalVisible} transparent={true} animationType="fade">
-          <ThemedView style={styles.modalContainer}>
-            <Image
-              source={{uri: 'data:image/jpeg;base64,' + complaint.upload_image}}
-              style={styles.fullImage}
-            />
-            <ThemedButton
-              title="Close"
-              onPress={() => setModalVisible(false)}
-              style={styles.closeButton}
-            />
+      {loader ? (
+        <Loader />
+      ) : (
+        <ThemedDetailCard style={styles.card}>
+          <ThemedView style={styles.imageContainer}>
+            <TouchableOpacity onPress={() => setModalVisible(true)}>
+              {complaint?.image_url ? (
+                <Image
+                  source={{uri: 'data:image/jpeg;base64,' + complaint.image_url}}
+                  style={styles.imagePreview}
+                />
+              ) : (
+                <ThemedText>Image Preview</ThemedText>
+              )}
+            </TouchableOpacity>
           </ThemedView>
-        </Modal>
-      </ThemedDetailCard>
+
+          <ThemedView style={styles.statusContainer}>
+            <ThemedText type="heading5" style={styles.statusLabel} primaryColor>
+              Status
+            </ThemedText>
+            <ThemedBadge status={getStatusBadge(complaint?.status)} style={styles.badge}>
+              {complaint?.status}
+            </ThemedBadge>
+          </ThemedView>
+
+          <DetailRow label="Reference Number" value={complaint?.ref_number ?? 'N/A'} />
+          <DetailRow label="Complaint Category" value={complaint?.complaint_category ?? 'N/A'} />
+          <DetailRow label="Complaint Type" value={complaint?.complaint_type ?? 'N/A'} />
+          <DetailRow label="Complaint Details" value={complaint?.complaint_details ?? 'N/A'} />
+          <DetailRow
+            label="Assigned Team"
+            value={teams.find(team => team.id === complaint?.assigned_team)?.name ?? 'N/A'}
+          />
+          <ThemedView
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: 10,
+              borderRadius: 10,
+              backgroundColor: '#333',
+            }}
+          >
+            <Ionicons name="call" size={24} color="white" style={{marginRight: 10}} />
+            <ThemedText type="default" style={{color: 'white', flex: 1}}>
+              {complaint?.user_phone_number}
+            </ThemedText>
+            <TouchableOpacity
+              onPress={callUser}
+              style={{
+                backgroundColor: '#007AFF',
+                paddingVertical: 8,
+                paddingHorizontal: 25,
+                borderRadius: 5,
+              }}
+            >
+              <ThemedText type="default" style={{color: 'white'}}>
+                Contact Team
+              </ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
+          <Modal visible={modalVisible} transparent={true} animationType="fade">
+            <ThemedView style={styles.modalContainer}>
+              <Image
+                source={{uri: 'data:image/jpeg;base64,' + complaint.image_url}}
+                style={styles.fullImage}
+              />
+              <ThemedButton
+                title="Close"
+                onPress={() => setModalVisible(false)}
+                style={styles.closeButton}
+              />
+            </ThemedView>
+          </Modal>
+        </ThemedDetailCard>
+      )}
     </ScrollView>
   );
 };
@@ -182,3 +231,4 @@ const styles = StyleSheet.create({
 });
 
 export default ViewComplaintScreen;
+

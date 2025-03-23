@@ -96,9 +96,7 @@ export default ComplaintDetailScreen = () => {
         complaint_details: complaintDetails,
         ref_number: RegExp(/.*(?=:)/).test(params?.ocr_text)
           ? params?.ocr_text?.replace(/.*(?=:)/, '')
-          : RegExp(/(no\.?|No\.?)/i).test(params?.ocr_text)
-            ? params?.ocr_text?.replace(/(no\.?|No\.?)/i, '')
-            : params?.ocr_text,
+          : params?.ocr_text,
         status: 'PENDING',
         upload_image: uploadImage,
         latitude: location?.latitude,

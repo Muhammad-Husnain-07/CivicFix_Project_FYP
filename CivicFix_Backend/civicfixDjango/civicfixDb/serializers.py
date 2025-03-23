@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import *
 from rest_framework_simplejwt.tokens import RefreshToken
 import base64
+from django.contrib.auth.hashers import make_password
 
 class BinaryField(serializers.CharField):
     def to_internal_value(self, data):
@@ -13,10 +14,16 @@ class BinaryField(serializers.CharField):
             raise serializers.ValidationError("Invalid file encoding")
 
 class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
+
+    def create(self, validated_data):
+        validated_data['password'] = make_password(validated_data['password'])
+        return super().create(validated_data)
+
     class Meta:
         model = CustomUser
         fields = [
-            'user_id',
+            'id',
             'name',
             'father_name',
             'cnic',
@@ -25,9 +32,6 @@ class UserSerializer(serializers.ModelSerializer):
             'email',
             'password',
         ]
-        extra_kwargs = {
-            'password': {'write_only': True} # Password is write-only
-        }
         
 class ComplaintSerializer(serializers.ModelSerializer):
     upload_image = serializers.CharField(write_only=True, required=False)  # Base64 string for input
@@ -40,7 +44,7 @@ class ComplaintSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Complaint
-        exclude=['assigned_team_id','status','resolved_status']
+        fields="__all__"
 
     def create(self, validated_data):
         # Handle binary data for the upload_image
@@ -52,7 +56,7 @@ class ComplaintSerializer(serializers.ModelSerializer):
 
     def get_image_url(self, obj):
         if obj.upload_image:
-            return f"data:image/jpeg;base64,{base64.b64encode(obj.upload_image).decode('utf-8')}"
+            return f"{base64.b64encode(obj.upload_image).decode('utf-8')}"
         return None
     
 class ComplaintListSerializer(serializers.ModelSerializer):
@@ -60,10 +64,16 @@ class ComplaintListSerializer(serializers.ModelSerializer):
     department = serializers.StringRelatedField() 
     class Meta:
         model = Complaint
-        fields='__all__'
+        exclude = ['upload_image']
         
 
 class TeamuserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
+
+    def create(self, validated_data):
+        validated_data['password'] = make_password(validated_data['password'])
+        return super().create(validated_data)
+
     class Meta:
         model = Teamuser
         fields = '__all__'

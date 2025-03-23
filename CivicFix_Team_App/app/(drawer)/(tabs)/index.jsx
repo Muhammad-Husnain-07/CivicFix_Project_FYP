@@ -21,11 +21,18 @@ export default function HomeScreen() {
       const res = await apiClient(`/complaints?team_id=${teamId}`);
       if (res?.length > 0) {
         setComplaints(
-          res.map(item => ({
-            id: item?.complaint_id,
-            title: `${item?.department} - ${item?.complaint_type} (ID: ${item?.complaint_id})`,
-            ...item,
-          })),
+          res
+            .filter(
+              item =>
+                item?.status?.toLowerCase() === 'pending' ||
+                item?.status?.toLowerCase() === 'in progress',
+            )
+            .map(item => ({
+              id: item?.complaint_id,
+              title: `${item?.department} - ${item?.complaint_type} (ID: ${item?.complaint_id})`,
+              ...item,
+            })),
+      
         );
       } else {
         setComplaints([]);

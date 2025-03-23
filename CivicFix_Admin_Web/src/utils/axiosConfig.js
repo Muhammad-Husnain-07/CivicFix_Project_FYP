@@ -43,13 +43,13 @@ const refreshToken = async (error) => {
         "Bearer " + response.data.access_token;
       return apiClient(error.config);
     } catch (error) {
-      if (error.response.status === 500) {
+      if (error.response?.status === 500) {
         const theme = localStorage.getItem("theme");
         localStorage.clear();
         localStorage.setItem("theme", theme);
-        navigate("/admin-sign-in");
+        window.location.href = "/admin-sign-in";
       }
-      console.error("Refresh token failed:", error.message);
+      console.error("Refresh token failed:", error?.message);
       return Promise.reject(error);
     }
   }
@@ -71,6 +71,7 @@ apiClient.interceptors.response.use(
     if (error.response) {
       console.error("Error Response Data:", error.response.data);
     }
+
     return refreshToken(error);
   }
 );
