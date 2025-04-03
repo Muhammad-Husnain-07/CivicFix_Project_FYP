@@ -1,10 +1,10 @@
-import {getData, storeData} from '@/hooks/useLocalStorage';
+import {getData, removeData, storeData} from '@/hooks/useLocalStorage';
 import axios from 'axios';
-import { URL } from './baseURL';
+import {URL} from './baseURL';
 
 // Automatically determine the server IP
-//const BASE_URL = `${process.env.EXPO_PUBLIC_WEB_BASE_URL}`; // Default port is 8000, adjust if needed
-const BASE_URL=URL;
+const BASE_URL = URL; // Default port is 8000, adjust if needed
+
 // Create Axios instance
 const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -39,7 +39,10 @@ const refreshToken = async error => {
       error.config.headers['Authorization'] = 'Bearer ' + response.data.access_token;
       return apiClient(error.config);
     } catch (error) {
-      console.error('Refresh token failed:', error.message);
+      if (error.response?.status === 500) {
+        removeData();
+      }
+      console.error('Refresh token failed:', error?.message);
       return Promise.reject(error);
     }
   }

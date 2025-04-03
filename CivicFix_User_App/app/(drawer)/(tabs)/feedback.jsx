@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, ScrollView, Pressable, RefreshControl} from 'react-native';
+import {StyleSheet, ScrollView, Pressable, RefreshControl, View} from 'react-native';
 import {ThemedView} from '@/components/ThemedView';
 import ThemedComplaintCard from '@/components/ThemedComplaintCard';
 import {ThemedText} from '@/components/ThemedText';
@@ -7,32 +7,34 @@ import {useNavigation} from 'expo-router';
 import Loader from '@/components/Loader';
 import {getData} from '@/hooks/useLocalStorage';
 import apiClient from '@/utils/axiosConfig';
+import {useThemeColor} from '@/hooks/useThemeColor';
+import ThemedBadge from '@/components/ThemedBadge';
 
-export default function HomeScreen() {
+export default function FeedbackScreen({lightColor, darkColor}) {
+  const borderColor = useThemeColor({light: lightColor, dark: darkColor}, 'border');
   const navigation = useNavigation();
   const [loader, setLoader] = useState(false);
-  const [teamId, setTeamId] = useState(null);
+  const [userId, setUserId] = useState(null);
   const [complaints, setComplaints] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const getComplaints = async () => {
     try {
       setLoader(true);
-      const res = await apiClient(`/complaints?team_id=${teamId}`);
+      const res = await apiClient(`/complaints?user_id=${userId}`);
       if (res?.length > 0) {
         setComplaints(
           res
-            .filter(
+            ?.filter(
               item =>
-                item?.status?.toLowerCase() === 'pending' ||
-                item?.status?.toLowerCase() === 'in progress',
+                item?.status?.toLowerCase() !== 'pending' &&
+                item?.status?.toLowerCase() !== 'in progress' &&
+                item?.feedback_submitted === false,
             )
-            .map(item => ({
+            ?.map(item => ({
               id: item?.complaint_id,
-              title: `${item?.department} - ${item?.complaint_type} (ID: ${item?.complaint_id})`,
-              ...item,
+              title: `(Complaint ID: ${item?.complaint_id}) Feedback`,
             })),
-      
         );
       } else {
         setComplaints([]);
@@ -47,15 +49,15 @@ export default function HomeScreen() {
 
   useEffect(() => {
     getData('user_data').then(data => {
-      setTeamId(JSON.parse(data)?.team_id);
+      setUserId(JSON.parse(data)?.user_id);
     });
   }, []);
 
   useEffect(() => {
-    if (teamId) {
+    if (userId) {
       getComplaints();
     }
-  }, [teamId]);
+  }, [userId]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -73,8 +75,7 @@ export default function HomeScreen() {
         {complaints?.length === 0 ? (
           <>
             <ThemedView style={styles.titleContainer}>
-              <ThemedText type="title">Welcome!</ThemedText>
-              <ThemedText type="default">No Complaints Assigned.</ThemedText>
+              <ThemedText type="default">No Pending Feedbacks</ThemedText>
             </ThemedView>
           </>
         ) : (
@@ -83,13 +84,18 @@ export default function HomeScreen() {
               key={item?.id}
               onPress={() => {
                 navigation.navigate('(complaint)', {
-                  screen: 'view_complaint',
-                  params: {...item},
+                  screen: 'feedback',
+                  params: {complaint_id: item?.id},
                 });
               }}
             >
               <ThemedView style={styles.subContainer}>
-                <ThemedComplaintCard key={item?.id} data={item} />
+                <ThemedView style={[{borderColor}, styles.card]}>
+                  <ThemedText style={styles.title}>{item?.title || 'No Title'}</ThemedText>
+                  <ThemedView style={styles.rightSection}>
+                    <ThemedBadge status="danger">Not Submitted</ThemedBadge>
+                  </ThemedView>
+                </ThemedView>
               </ThemedView>
             </Pressable>
           ))
@@ -111,21 +117,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   titleContainer: {
-    flex: 1,
-    marginTop:"80%",
     flexDirection: 'column',
     alignItems: 'center',
     gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    margin: 10,
+    borderWidth: 1,
+    borderRadius: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  title: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  rightSection: {
+    paddingHorizontal: 12,
+    alignItems: 'center',
   },
 });

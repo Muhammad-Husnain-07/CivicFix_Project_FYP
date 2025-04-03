@@ -12,6 +12,7 @@ const Card = styled(MuiCard)(spacing);
 
 const ChartWrapper = styled.div`
   height: 290px;
+  width: 100%;
 `;
 function MultiAxisLineChart({ theme }) {
   const [chartData, setChartData] = useState({
@@ -120,3 +121,4 @@ function MultiAxisLineChart({ theme }) {
   );
 }
 export default withTheme(MultiAxisLineChart);
+

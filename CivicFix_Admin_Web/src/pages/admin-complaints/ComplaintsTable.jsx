@@ -218,7 +218,7 @@ const ComplaintsTable = ({ theme }) => {
           </Grid>
         </Grid>
       </>
-      <ComplaintDetails selectedRow={selectedRow} open={open} setOpen={setOpen} teams={teams} fetchData={fetchData} />
+     {open && <ComplaintDetails selectedRow={selectedRow} open={open} setOpen={setOpen} teams={teams} fetchData={fetchData} />}
     </>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -15,6 +15,8 @@ import {
   CardActions,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import apiClient from "../../utils/axiosConfig";
+import Loader from "../../components/Loader";
 
 const style = {
   position: "absolute",
@@ -42,7 +44,7 @@ const renderDetail = (label, value, isChip = false) => (
             ? "warning"
             : value?.toLowerCase() === "in progress"
             ? "info"
-            : value?.toLowerCase() === "resolved"
+            : value?.toLowerCase() === "resolved" || value?.toLowerCase() === "completed"
             ? "success"
             : "error"
         }
@@ -58,9 +60,25 @@ const renderDetail = (label, value, isChip = false) => (
 );
 
 const ComplaintDetails = ({ selectedRow, open, setOpen, teams }) => {
+  const[complaint, setComplaint] = useState(null);
   const handleClose = () => {
     setOpen(false);
+    setComplaint(null);
   };
+
+  const getComplaint=(complaintId) =>{
+    apiClient.get(`/complaints/${complaintId}`).then((response) => {
+      if(response){
+        setComplaint(response);
+      }
+    })
+  }
+
+useEffect(() => {
+  if (selectedRow) {
+    getComplaint(selectedRow.complaint_id);
+  }
+}, [selectedRow]);
 
   return (
     <Modal
@@ -88,26 +106,26 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams }) => {
           <Typography variant="h6" sx={{ mb: 2 }}>
             Complaint Information
           </Typography>
-          <Grid container spacing={4}>
+         {!complaint ? <Loader/>: <Grid container spacing={4}>
             <Grid item xs={12} md={6}>
               <Stack spacing={3}>
-                {renderDetail("Complaint ID", selectedRow.complaint_id)}
-                {renderDetail("Department", selectedRow.department)}
-                {renderDetail("Reference Number", selectedRow.ref_number)}
-                {renderDetail("Category", selectedRow.complaint_category)}
-                {renderDetail("Type", selectedRow.complaint_type)}
-                {renderDetail("Details", selectedRow.complaint_details)}
-                {renderDetail("Date", selectedRow.submission_date)}
-                {renderDetail("Status", selectedRow.status, true)}
+                {renderDetail("Complaint ID", complaint?.complaint_id)}
+                {renderDetail("Department", complaint?.department)}
+                {renderDetail("Reference Number", complaint?.ref_number)}
+                {renderDetail("Category", complaint?.complaint_category)}
+                {renderDetail("Type", complaint?.complaint_type)}
+                {renderDetail("Details", complaint?.complaint_details)}
+                {renderDetail("Date", new Date(complaint?.submission_date).toLocaleDateString())}
+                {renderDetail("Status", complaint?.status, true)}
                 {renderDetail(
                   "Resolved Status",
-                  selectedRow.resolved_status,
-                  selectedRow.resolved_status?true : false
+                  complaint?.resolved_status,
+                  complaint?.resolved_status?true : false
                 )}
                 {renderDetail(
                   "Assigned Team",
                   teams?.find(
-                    (team) => team.id === selectedRow.assigned_team_id
+                    (team) => team.id === complaint?.assigned_team_id
                   )?.name || null
                 )}
               </Stack>
@@ -122,7 +140,7 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams }) => {
             >
               <CardMedia
                 component="img"
-                image={`data:image/jpeg;base64,${selectedRow.upload_image}`}
+                image={`data:image/jpeg;base64,${complaint?.image_url}`}
                 alt="Complaint Image"
                 sx={{
                   width: "100%",
@@ -133,7 +151,7 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams }) => {
                 }}
               />
             </Grid>
-          </Grid>
+          </Grid>}
         </CardContent>
       </Card>
     </Modal>

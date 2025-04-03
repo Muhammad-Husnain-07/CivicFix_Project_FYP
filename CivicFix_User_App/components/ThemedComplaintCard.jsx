@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import { StyleSheet} from 'react-native';
 import {ThemedView} from './ThemedView';
 import {ThemedText} from './ThemedText';
 import {useThemeColor} from '@/hooks/useThemeColor';

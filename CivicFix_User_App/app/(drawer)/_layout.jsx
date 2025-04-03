@@ -75,7 +75,7 @@ const CustomDrawerContent = props => {
         <ThemedView style={styles.userInfo}>
           <Image
             source={{
-              uri: `https://ui-avatars.com/api/?name=${user?.name}&background=random&color=random&size=256`,
+              uri: `https://ui-avatars.com/api/?name=${user?.name}&background=random&color=white&size=256`,
             }} // Replace with the user's DP URL
             style={styles.profileImage}
             alt="Profile Image"

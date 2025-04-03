@@ -68,7 +68,7 @@ const getDashboardRoutes = (department) => [
   },
   {
     path: "*",
-    element: <ErrorLayout />,
+    element: <AuthLayout />,
     children: [
       {
         path: "*",
@@ -101,7 +101,7 @@ const getAdminRoutes = () => [
   },
   {
     path: "*",
-    element: <ErrorLayout />,
+    element: <AuthLayout />,
     children: [
       {
         path: "*",
@@ -128,7 +128,7 @@ const getAuthRoutes = () => [
   },
   {
     path: "*",
-    element: <ErrorLayout />,
+    element: <AuthLayout />,
     children: [
       {
         path: "*",

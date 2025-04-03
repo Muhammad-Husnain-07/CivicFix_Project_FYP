@@ -24,7 +24,7 @@ export default function HistoryScreen() {
           res
             .filter(
               item =>
-                item?.status?.toLowerCase() !== 'pending' ||
+                item?.status?.toLowerCase() !== 'pending' &&
                 item?.status?.toLowerCase() !== 'in progress',
             )
             .map(item => ({

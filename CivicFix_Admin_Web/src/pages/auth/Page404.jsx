@@ -1,6 +1,5 @@
 import React from "react";
 import styled from "@emotion/styled";
-import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 
 import { Button as MuiButton, Typography } from "@mui/material";
@@ -32,8 +31,7 @@ function Page404() {
       </Typography>
 
       <Button
-        component={Link}
-        to="/"
+        onClick={() => window.location.replace("/dashboard")}
         variant="contained"
         color="secondary"
         mt={2}

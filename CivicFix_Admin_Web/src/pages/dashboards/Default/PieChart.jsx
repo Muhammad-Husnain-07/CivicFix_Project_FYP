@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { withTheme } from "@emotion/react";
 import Chart from "react-apexcharts";
 
-import { CardContent, Card as MuiCard, Typography } from "@mui/material";
+import { Box, CardContent, Card as MuiCard, Typography } from "@mui/material";
 import { spacing } from "@mui/system";
 import axios from "axios";
 import Loader from "../../../components/Loader";
@@ -13,7 +13,7 @@ const Card = styled(MuiCard)(spacing);
 const Spacer = styled.div(spacing);
 
 const ChartWrapper = styled.div`
-  height: 300px;
+  height: 200px;
 `;
 
 const PieChart = ({ theme, filter }) => {
@@ -65,7 +65,9 @@ const PieChart = ({ theme, filter }) => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const data =await apiClient("/department-complaint-stats");
+        const data = await apiClient(
+          "/department-complaint-stats?filter=" + filter
+        );
         if (data) {
           setChartData(data);
         }
@@ -91,13 +93,20 @@ const PieChart = ({ theme, filter }) => {
 
         {loading ? (
           <Loader />
+        ) : chartData?.data?.length === 0 ||
+          chartData?.data?.every((item) => item === 0) ? (
+          <Box sx={{height: "200px", display: "flex", justifyContent: "center", alignItems: "center"}}>
+          <Typography variant="body1" align="center" gutterBottom>
+            No data available.
+          </Typography>
+          </Box>
         ) : (
           <ChartWrapper>
             <Chart
               options={options}
               series={chartData?.data}
               type="pie"
-              height="260"
+              height="240"
             />
           </ChartWrapper>
         )}
