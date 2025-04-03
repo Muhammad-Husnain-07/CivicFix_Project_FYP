@@ -25,6 +25,8 @@ from dateutil.relativedelta import relativedelta
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from civicfixDb.authentication import TokenOnlyAuthentication
+from django.db.models import Exists, OuterRef
+
 
 def notify(message):
     channel_layer = get_channel_layer()
@@ -405,7 +407,7 @@ class ComplaintViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             serializer.save()
             notification_object={
-                "title": "New Complaint",
+                "title": "New Complaint Lodged",
                 "body": "A new complaint has been lodged.",
                 "sub_admins": list(SubAdmin.objects.filter(department__department_name=department_name).values_list('username', flat=True)),
             }
@@ -464,8 +466,14 @@ class ComplaintGetView(generics.RetrieveAPIView):
         serializer = self.get_serializer(instance)
         data = serializer.data
         data['user_phone_number'] = user_phone_number
+
         team_member_phone_number = instance.assigned_team_id.team_members.first().phone if instance.assigned_team_id else None
         data['team_member_phone_number'] = team_member_phone_number
+
+        # Check if feedback for this complaint has been submitted
+        feedback_exists = Feedback.objects.filter(complaint=instance).exists()
+        data['feedback_submitted'] = feedback_exists
+
         return Response(data)
 
 class ComplaintListView(generics.ListAPIView):
@@ -486,7 +494,13 @@ class ComplaintListView(generics.ListAPIView):
             return Complaint.objects.filter(assigned_team_id=team_id)
         
         if user_id:
-            return Complaint.objects.filter(user_id=user_id)
+            # Annotate each complaint with a flag indicating if feedback exists
+            complaints = Complaint.objects.annotate(
+                feedback_submitted=Exists(Feedback.objects.filter(complaint=OuterRef('pk')))
+            )
+            for complaint in complaints:
+                complaint.feedback_submitted = Feedback.objects.filter(complaint=complaint.pk).exists()
+            return complaints.filter(user_id=user_id)
 
         if not department_name and not team_id and not user_id:
             return Complaint.objects.all()
@@ -604,7 +618,7 @@ class ProofOfResolutionCreateView(generics.CreateAPIView):
         
         notification_object = {
             "title": "Complaint " + status,
-            "body": f"Complaint has been {status.lower()}",
+            "body": f"Your Complaint has been {status.lower()}",
             "user_id": complaint.user_id
         }
         notify(notification_object)
@@ -617,6 +631,36 @@ class ProofOfResolutionListView(generics.ListAPIView):
     def get_queryset(self):
         complaint_id = self.request.query_params.get('complaint_id')
         return ProofOfResolution.objects.filter(complaint__complaint_id=complaint_id)
+
+class FeedbackCreateView(generics.CreateAPIView):
+    """API to submit user feedback"""
+    serializer_class = FeedbackSerializer
+    authentication_classes = [TokenOnlyAuthentication]
+    permission_classes=[]
+
+    def perform_create(self, serializer):
+        """Attach the authenticated user (CustomUser instance) to the feedback"""
+        user = self.request.user  # Ensure this is an instance of CustomUser
+        if not isinstance(user, CustomUser):
+            user = CustomUser.objects.get(id=user.get('user_id'))  # Retrieve user instance
+        
+        serializer.save(user=user)
+
+
+class FeedbackListView(generics.ListAPIView):
+    """API to get all feedback"""
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer
+    authentication_classes = [TokenOnlyAuthentication]
+    permission_classes=[]
+
+
+class FeedbackDetailView(generics.RetrieveAPIView):
+    """API to get feedback by ID"""
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer
+    authentication_classes = [TokenOnlyAuthentication]
+    permission_classes=[]
 
 # Charts Stats
 class ComplaintStatsView(generics.ListAPIView):
@@ -808,10 +852,28 @@ class DepartmentComplaintStatsView(generics.ListAPIView):
         departments = Department.objects.all()
         labels = []
         data = []
+        filter_param = request.query_params.get("filter", None)
+        
+        today = now().date()
+        yesterday = today - timedelta(days=1)
+        last7days = today - timedelta(days=7)
+        last30days = today - timedelta(days=30)
+        
+        # Time filters
+        if filter_param == "today":
+            queryset = Complaint.objects.filter(submission_date__date=today)
+        elif filter_param == "yesterday":
+            queryset = Complaint.objects.filter(submission_date__date=yesterday)
+        elif filter_param == "last7days":
+            queryset = Complaint.objects.filter(submission_date__date__gte=last7days)
+        elif filter_param == "last30days":
+            queryset = Complaint.objects.filter(submission_date__date__gte=last30days)
+        else:
+            queryset = Complaint.objects.all()
         
         for department in departments:
             labels.append(department.department_name)
-            complaint_count = Complaint.objects.filter(department=department).count()
+            complaint_count = queryset.filter(department=department).count()
             data.append(complaint_count)
 
         stats = {

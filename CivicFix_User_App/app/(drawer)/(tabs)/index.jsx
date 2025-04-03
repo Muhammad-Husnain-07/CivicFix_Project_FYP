@@ -21,12 +21,17 @@ export default function HomeScreen() {
       const res = await apiClient(`/complaints?user_id=${userId}`);
       if (res?.length > 0) {
         setComplaints(
-          res.map(item => ({
+          res
+            ?.filter(
+              item =>
+                item?.status?.toLowerCase() === 'pending' ||
+                item?.status?.toLowerCase() === 'in progress',
+            )
+            ?.map(item => ({
               id: item?.complaint_id,
               title: `${item?.department} - ${item?.complaint_type} (ID: ${item?.complaint_id})`,
               ...item,
             })),
-      
         );
       } else {
         setComplaints([]);
@@ -55,7 +60,6 @@ export default function HomeScreen() {
     getComplaints().then(() => setRefreshing(false));
   }, [userId]);
 
-  
   return loader ? (
     <Loader />
   ) : (
@@ -65,16 +69,21 @@ export default function HomeScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         {complaints?.length === 0 ? (
-          <>
-            <ThemedView style={styles.titleContainer}>
-              <ThemedText type="title">Welcome!</ThemedText>
-            </ThemedView>
-            <ThemedView style={styles.bodyContainer}>
-              <ThemedText type="body">
-                No Complaints Found. For Adding New Complaint Press + Icon on Top Right Corner.
-              </ThemedText>
-            </ThemedView>
-          </>
+          <ThemedView
+            style={{
+              height: '100%',
+              width: '100%',
+              alignItems: 'center',
+              marginTop: '80%',
+              paddingHorizontal: 20,
+            }}
+          >
+            <ThemedText type="title">Welcome!</ThemedText>
+
+            <ThemedText type="body">
+              No Complaints Found. For Lodging Complaint Press + Icon on Top Right Corner.
+            </ThemedText>
+          </ThemedView>
         ) : (
           complaints?.map(item => (
             <Pressable
@@ -100,8 +109,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
     width: '100%',
     height: '100%',
   },

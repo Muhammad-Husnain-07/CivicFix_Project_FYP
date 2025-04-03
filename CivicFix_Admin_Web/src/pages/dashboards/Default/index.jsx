@@ -40,7 +40,7 @@ function Default({ theme }) {
     const fetchData = async () => {
       try {
         const data = await apiClient(
-          "/complaints/stats?filter=" + filter.value 
+          "/complaints/stats?filter=" + filter.value
         );
         if (data) {
           setStatsData(data);
@@ -71,8 +71,8 @@ function Default({ theme }) {
       <Divider my={6} />
 
       <Grid container spacing={6} mb={6}>
-        <Grid item xs={12} sm={12} md={8} lg={6} xl={6}>
-          <LineChart filter={filter?.value} />
+        <Grid item xs={12} sm={12} md={5} lg={5} xl={5}>
+          <PieChart filter={filter?.value} />
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={6} xl={6}>
           {statsData ? (
@@ -106,13 +106,10 @@ function Default({ theme }) {
       </Grid>
 
       <Grid container spacing={6} mb={10}>
-        {/* <Grid item xs={12} sm={12} md={4} lg={3} xl={3}>
-          <MiniTable filter={filter?.value} />
-        </Grid> */}
-        <Grid item xs={12} sm={12} md={5} lg={5} xl={5}>
-          <PieChart filter={filter?.value} />
+        <Grid item xs={12} sm={12} md={12} lg={12} xl={12}>
+          <LineChart filter={filter?.value} />
         </Grid>
-        <Grid item xs={12} sm={12} md={7} lg={7} xl={7}>
+        <Grid item xs={12} sm={12} md={12} lg={12} xl={12}>
           <MultiAxisLineChart />
         </Grid>
       </Grid>

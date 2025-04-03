@@ -41,44 +41,52 @@ const ComplaintsTable = ({ theme }) => {
   const [open, setOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState({});
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await apiClient.get("/complaints?department="+localStorage.getItem("department"));
-        const data = response;
-        if (data) {
-          setRows(
-            data.map((row) => {
-              return {
-                ...row,
-                submission_date: new Date(row.submission_date).toLocaleDateString(),
-              };
-            })
-          );
-          setLoading(false);
-        } else {
-          setLoading(false);
-          setRows([]);
-        }
-      } catch (error) {
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.get(
+        "/complaints?department=" + localStorage.getItem("department")
+      );
+      const data = response;
+      if (data) {
+        setRows(
+          data.map((row) => {
+            return {
+              ...row,
+              submission_date: new Date(
+                row.submission_date
+              ).toLocaleDateString(),
+            };
+          })
+        );
         setLoading(false);
-        console.error("Error fetching data: ", error);
+      } else {
+        setLoading(false);
+        setRows([]);
       }
-    };
-
-    const getTeams = async () => {
-      try {
-        const response = await apiClient.get("/teams/list");
-        const data = response;
-        if (data) {
-          setTeams(data?.filter((team) => team.department == localStorage.getItem("department_id")));
-        }
-      } catch (error) {
-        console.error("Error fetching data: ", error);
-      }
-
+    } catch (error) {
+      setLoading(false);
+      console.error("Error fetching data: ", error);
     }
+  };
+
+  const getTeams = async () => {
+    try {
+      const response = await apiClient.get("/teams/list");
+      const data = response;
+      if (data) {
+        setTeams(
+          data?.filter(
+            (team) => team.department == localStorage.getItem("department_id")
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    }
+  };
+
+  useEffect(() => {
     getTeams();
     fetchData();
   }, []);
@@ -155,7 +163,7 @@ const ComplaintsTable = ({ theme }) => {
         sort: false,
         customBodyRender: (value, tableMeta, updateValue) => {
           return teams?.find((team) => team.id === value)?.name || "N/A";
-        }
+        },
       },
     },
     {
@@ -170,13 +178,15 @@ const ComplaintsTable = ({ theme }) => {
               label={value}
               color={
                 value?.toLowerCase() === "completed"
-              ? "success"
-              : value?.toLowerCase() === "closed"
-              ? "error"
-              : "warning"
+                  ? "success"
+                  : value?.toLowerCase() === "closed"
+                  ? "error"
+                  : "warning"
               }
             />
-          ) : "N/A";
+          ) : (
+            "N/A"
+          );
         },
       },
     },
@@ -207,7 +217,15 @@ const ComplaintsTable = ({ theme }) => {
           </Grid>
         </Grid>
       </>
-      <ComplaintDetails selectedRow={selectedRow} open={open} setOpen={setOpen} teams={teams}/>
+      {open && (
+        <ComplaintDetails
+          selectedRow={selectedRow}
+          open={open}
+          setOpen={setOpen}
+          teams={teams}
+          fetchData={fetchData}
+        />
+      )}
     </>
   );
 };

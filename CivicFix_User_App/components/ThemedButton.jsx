@@ -43,7 +43,6 @@ const ButtonStyle = StyleSheet.create({
     minWidth: 100, // Minimum width
     maxWidth: 300, // Maximum width to avoid too wide buttons
     borderRadius: 10,
-    marginBottom: 10,
   },
   defaultText: {
     fontSize: 16, // Slightly larger text for readability

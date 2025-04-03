@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, ScrollView, Pressable, RefreshControl} from 'react-native';
+import {StyleSheet, ScrollView, Pressable, RefreshControl, View} from 'react-native';
 import {ThemedView} from '@/components/ThemedView';
 import ThemedComplaintCard from '@/components/ThemedComplaintCard';
 import {ThemedText} from '@/components/ThemedText';
@@ -8,31 +8,31 @@ import Loader from '@/components/Loader';
 import {getData} from '@/hooks/useLocalStorage';
 import apiClient from '@/utils/axiosConfig';
 
-export default function HomeScreen() {
+export default function HistoryScreen() {
   const navigation = useNavigation();
   const [loader, setLoader] = useState(false);
-  const [teamId, setTeamId] = useState(null);
+  const [userId, setUserId] = useState(null);
   const [complaints, setComplaints] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState('all');
 
   const getComplaints = async () => {
     try {
       setLoader(true);
-      const res = await apiClient(`/complaints?team_id=${teamId}`);
+      const res = await apiClient(`/complaints?user_id=${userId}`);
       if (res?.length > 0) {
         setComplaints(
           res
-            .filter(
+            ?.filter(
               item =>
-                item?.status?.toLowerCase() === 'pending' ||
-                item?.status?.toLowerCase() === 'in progress',
+                item?.status?.toLowerCase() !== 'pending' &&
+                item?.status?.toLowerCase() !== 'in progress',
             )
-            .map(item => ({
+            ?.map(item => ({
               id: item?.complaint_id,
               title: `${item?.department} - ${item?.complaint_type} (ID: ${item?.complaint_id})`,
               ...item,
             })),
-      
         );
       } else {
         setComplaints([]);
@@ -47,19 +47,28 @@ export default function HomeScreen() {
 
   useEffect(() => {
     getData('user_data').then(data => {
-      setTeamId(JSON.parse(data)?.team_id);
+      setUserId(JSON.parse(data)?.user_id);
     });
   }, []);
 
   useEffect(() => {
-    if (teamId) {
+    if (userId) {
       getComplaints();
     }
-  }, [teamId]);
+  }, [userId]);
 
   const handleRefresh = () => {
     setRefreshing(true);
     getComplaints();
+  };
+
+  const handleFilter = value => {
+    setFilter(value);
+    if (value === 'all') {
+      setComplaints(complaints);
+    } else {
+      setComplaints(complaints?.filter(item => item?.status?.toLowerCase() === value));
+    }
   };
 
   return loader ? (
@@ -73,8 +82,7 @@ export default function HomeScreen() {
         {complaints?.length === 0 ? (
           <>
             <ThemedView style={styles.titleContainer}>
-              <ThemedText type="title">Welcome!</ThemedText>
-              <ThemedText type="default">No Complaints Assigned.</ThemedText>
+              <ThemedText type="default">No Complaint History</ThemedText>
             </ThemedView>
           </>
         ) : (
@@ -111,21 +119,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   titleContainer: {
-    flex: 1,
-    marginTop:"80%",
     flexDirection: 'column',
     alignItems: 'center',
     gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
   },
 });

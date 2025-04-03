@@ -11,8 +11,9 @@ import {Ionicons} from '@expo/vector-icons';
 import Loader from '@/components/Loader';
 
 const ViewComplaintScreen = () => {
+  const navigation = useNavigation();
   const params = useLocalSearchParams();
-  const [complaint, setComplaint] = React.useState({});
+  const [complaint, setComplaint] = useState({});
   const complaintId = params?.id;
   const [modalVisible, setModalVisible] = useState(false);
   const [teams, setTeams] = useState([]);
@@ -60,7 +61,7 @@ const ViewComplaintScreen = () => {
   }, []);
 
   const callUser = () => {
-    Linking.openURL(`tel:${complaint?.user_phone_number}`).catch(err =>
+    Linking.openURL(`tel:${complaint?.team_member_phone_number}`).catch(err =>
       console.error('Failed to open phone app', err),
     );
   };
@@ -99,36 +100,63 @@ const ViewComplaintScreen = () => {
           <DetailRow label="Complaint Details" value={complaint?.complaint_details ?? 'N/A'} />
           <DetailRow
             label="Assigned Team"
-            value={teams.find(team => team.id === complaint?.assigned_team)?.name ?? 'N/A'}
+            value={teams.find(team => team.id === complaint?.assigned_team_id)?.name ?? 'N/A'}
           />
-          <ThemedView
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: 10,
-              borderRadius: 10,
-              backgroundColor: '#333',
-            }}
-          >
-            <Ionicons name="call" size={24} color="white" style={{marginRight: 10}} />
-            <ThemedText type="default" style={{color: 'white', flex: 1}}>
-              {complaint?.user_phone_number}
-            </ThemedText>
-            <TouchableOpacity
-              onPress={callUser}
-              style={{
-                backgroundColor: '#007AFF',
-                paddingVertical: 8,
-                paddingHorizontal: 25,
-                borderRadius: 5,
-              }}
-            >
-              <ThemedText type="default" style={{color: 'white'}}>
-                Contact Team
-              </ThemedText>
-            </TouchableOpacity>
-          </ThemedView>
+          {(complaint?.status?.toLowerCase() === 'pending' ||
+            complaint?.status?.toLowerCase() === 'in progress') &&
+            complaint?.team_member_phone_number && (
+              <ThemedView
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: 10,
+                  borderRadius: 10,
+                  backgroundColor: '#333',
+                }}
+              >
+                <Ionicons name="call" size={24} color="white" style={{marginRight: 10}} />
+                <ThemedText type="default" style={{color: 'white', flex: 1}}>
+                  {complaint?.team_member_phone_number}
+                </ThemedText>
+                <TouchableOpacity
+                  onPress={callUser}
+                  style={{
+                    backgroundColor: '#007AFF',
+                    paddingVertical: 8,
+                    paddingHorizontal: 10,
+                    borderRadius: 5,
+                  }}
+                >
+                  <ThemedText type="default" style={{color: 'white', fontWeight: '400'}}>
+                    Contact Team
+                  </ThemedText>
+                </TouchableOpacity>
+              </ThemedView>
+            )}
+          {complaint?.status?.toLowerCase() === 'resolved' ||
+          complaint?.status?.toLowerCase() === 'closed' ? (
+            complaint?.feedback_submitted === false ? (
+              <ThemedView style={styles.buttonContainer}>
+                <ThemedButton
+                  title="Give Feedback"
+                  onPress={() =>
+                    navigation.navigate('(complaint)', {
+                      screen: 'feedback',
+                      params: {complaint_id: complaintId},
+                    })
+                  }
+                />
+              </ThemedView>
+            ) : (
+              <ThemedView style={styles.buttonContainer}>
+                <ThemedButton
+                  title="Feedback Already Submitted"
+                  style={{backgroundColor: '#808080'}}
+                />
+              </ThemedView>
+            )
+          ) : null}
           <Modal visible={modalVisible} transparent={true} animationType="fade">
             <ThemedView style={styles.modalContainer}>
               <Image
@@ -231,4 +259,3 @@ const styles = StyleSheet.create({
 });
 
 export default ViewComplaintScreen;
-

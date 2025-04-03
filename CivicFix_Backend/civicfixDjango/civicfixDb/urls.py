@@ -36,6 +36,10 @@ urlpatterns = [
     
     path('api/proof-of-resolution', ProofOfResolutionCreateView.as_view(), name='proof-create'),
     path('api/get-proof-of-resolution',ProofOfResolutionListView.as_view(), name='proof-by-complaint-id'),
+    
+    path('api/feedback', FeedbackCreateView.as_view(), name='feedback-create'),   # Add Feedback
+    path('api/feedback/all', FeedbackListView.as_view(), name='feedback-list'),   # Get All Feedback
+    path('api/feedback/<int:pk>', FeedbackDetailView.as_view(), name='feedback-detail'),  # Get Feedback by ID
 
 
     # Charts Stats

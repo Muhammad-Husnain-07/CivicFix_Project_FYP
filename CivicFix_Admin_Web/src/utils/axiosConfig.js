@@ -67,12 +67,15 @@ apiClient.interceptors.response.use(
     return response.data; // Simplify response handling
   },
   (error) => {
+    if (error.response?.status === 401) {
+      return refreshToken(error);
+    }
     console.error("Response Error:", error.message);
     if (error.response) {
       console.error("Error Response Data:", error.response.data);
     }
 
-    return refreshToken(error);
+    return Promise.reject(error);
   }
 );
 

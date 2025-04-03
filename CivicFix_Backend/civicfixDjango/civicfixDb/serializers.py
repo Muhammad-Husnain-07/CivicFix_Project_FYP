@@ -62,6 +62,7 @@ class ComplaintSerializer(serializers.ModelSerializer):
 class ComplaintListSerializer(serializers.ModelSerializer):
     assigned_to = serializers.StringRelatedField() 
     department = serializers.StringRelatedField() 
+    feedback_submitted = serializers.BooleanField(read_only=True)  # Add feedback flag
     class Meta:
         model = Complaint
         exclude = ['upload_image']
@@ -128,8 +129,18 @@ class NotificationSerializer(serializers.ModelSerializer):
         model = Notification
         fields = ['__all__']
 
-
 class FeedbackSerializer(serializers.ModelSerializer):
+    complaint_id = serializers.PrimaryKeyRelatedField(
+        queryset=Complaint.objects.all(), source='complaint', required=True
+    )
+
     class Meta:
         model = Feedback
-        fields = ['__all__']
+        fields = ['feedback_id', 'complaint_id', 'rating', 'comment', 'date']
+
+    def validate_rating(self, value):
+        """Ensure rating is between 1 and 5"""
+        if value < 1 or value > 5:
+            raise serializers.ValidationError("Rating must be between 1 and 5")
+        return value
+

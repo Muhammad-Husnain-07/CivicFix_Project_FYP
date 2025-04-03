@@ -177,7 +177,7 @@ const ViewComplaintScreen = () => {
               style={{
                 backgroundColor: '#007AFF',
                 paddingVertical: 8,
-                paddingHorizontal: 25,
+                paddingHorizontal: 10,
                 borderRadius: 5,
               }}
             >
