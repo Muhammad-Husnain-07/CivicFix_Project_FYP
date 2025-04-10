@@ -13,12 +13,12 @@ export default RegisterScreen = () => {
 
   const validateCnic = () => {
     if (!cnic) {
-      ToastAndroid.show('Please enter CNIC', ToastAndroid.SHORT);
+      ToastAndroid.show('Please enter CNIC', ToastAndroid.LONG);
       return false;
     }
     const cnicRegex = /^[0-9]{13}$/;
     if (!cnicRegex.test(cnic)) {
-      ToastAndroid.show('CNIC must be a 13 digit number', ToastAndroid.SHORT);
+      ToastAndroid.show('CNIC must be a 13 digit number', ToastAndroid.LONG);
       return false;
     }
     return true;
@@ -32,10 +32,11 @@ export default RegisterScreen = () => {
         <ThemedText type="subtitle">Register</ThemedText>
         <ThemedView style={styles.fieldContainer}>
           <ThemedTextField
-            placeholder="CNIC"
+            placeholder="CNIC (Without dashes)"
             style={styles.fieldStyling}
             onChangeText={text => setCnic(text)}
             value={cnic}
+            keyboardType="numeric"
           />
         </ThemedView>
         <ThemedView style={styles.buttonContainer}>

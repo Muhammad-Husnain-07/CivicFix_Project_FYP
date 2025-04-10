@@ -42,7 +42,7 @@ const refreshToken = async error => {
       if (error.response?.status === 500) {
         removeData();
       }
-      console.error('Refresh token failed:', error?.message);
+      console.log('Refresh token failed:', error?.message);
       return Promise.reject(error);
     }
   }
@@ -60,9 +60,9 @@ apiClient.interceptors.response.use(
     return response.data; // Simplify response handling
   },
   error => {
-    console.error('Response Error:', error.message);
+    console.log('Response Error:', error.message);
     if (error.response) {
-      console.error('Error Response Data:', error.response.data);
+      console.log('Error Response Data:', error.response.data);
     }
     return refreshToken(error);
   },

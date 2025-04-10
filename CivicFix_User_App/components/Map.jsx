@@ -61,10 +61,10 @@ export default function Map({setLocation}) {
           longitudeDelta: 0.01,
         }, 1000);
       } else {
-        ToastAndroid.show('Location Not Found', ToastAndroid.SHORT);
+        ToastAndroid.show('Location Not Found', ToastAndroid.LONG);
       }
     } catch (error) {
-      ToastAndroid.show('Failed to fetch location data.', ToastAndroid.SHORT);
+      ToastAndroid.show('Failed to fetch location data.', ToastAndroid.LONG);
     }
   };
 

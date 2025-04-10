@@ -17,7 +17,6 @@ export default function HistoryScreen() {
 
   const getComplaints = async () => {
     try {
-      setLoader(true);
       const res = await apiClient(`/complaints?team_id=${teamId}`);
       if (res?.length > 0) {
         setComplaints(
@@ -52,14 +51,26 @@ export default function HistoryScreen() {
 
   useEffect(() => {
     if (teamId) {
+      setLoader(true);
       getComplaints();
     }
   }, [teamId]);
 
   const handleRefresh = () => {
     setRefreshing(true);
+    setLoader(true);
     getComplaints();
   };
+
+  useEffect(() => {
+    const handleNavigation = (event) => {
+      if (event?.type === 'focus' && event?.target.includes('history') && teamId) {
+        getComplaints();
+      }
+    }
+    navigation.addListener('focus', handleNavigation);
+    return () => navigation.removeListener('focus', handleNavigation);
+  }, [navigation]);
 
   return loader ? (
     <Loader />

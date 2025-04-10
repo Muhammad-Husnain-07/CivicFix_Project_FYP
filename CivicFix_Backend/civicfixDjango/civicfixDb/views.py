@@ -62,7 +62,7 @@ class ObtainTokenView(APIView):
         # Check if user exists
         user = CustomUser.objects.filter(cnic=cnic, password=password).first()
         if not user:
-            return Response({"data": None,'message':{ "status":401,"description": 'Invalid CNIC or Password.'}}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"data": None,'message':{ "status":500,"description": 'Invalid CNIC or Password.'}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         try:
             refresh = RefreshToken.for_user(user)
@@ -101,13 +101,13 @@ class ObtainTokenTeamView(APIView):
         
         # Validate required fields
         if not email or not password:
-            return Response({"data": None,'message':{ "status":400,"description": 'email and Password are required.'}}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"data": None,'message':{ "status":400,"description": 'Email and Password are required.'}}, status=status.HTTP_400_BAD_REQUEST)
         
         # Check if user exists
         user = Teamuser.objects.filter(email=email, password=password).first()
         team=Team.objects.filter(team_members=user).first()
         if not user:
-            return Response({"data": None,'message':{ "status":401,"description": 'Invalid email or Password.'}}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"data": None,'message':{ "status":500,"description": 'Invalid email or Password.'}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         try:
             refresh = RefreshToken.for_user(user)
             data = {
@@ -148,7 +148,7 @@ class ObtainTokenAdminView(APIView):
         # Check if user exists
         user = Admin.objects.filter(username=username, password=password).first()
         if not user:
-            return Response({"data": None,'message':{ "status":401,"description": 'Invalid username or Password.'}}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"data": None,'message':{ "status":500,"description": 'Invalid username or Password.'}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         try:
             refresh = RefreshToken()
             refresh['id'] = user.id
@@ -189,7 +189,7 @@ class ObtainTokenSubAdminView(APIView):
         # Check if user exists
         user = SubAdmin.objects.filter(username=username, password=password).first()
         if not user:
-            return Response({"data": None,'message':{ "status":401,"description": 'Invalid username or Password.'}}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"data": None,'message':{ "status":500,"description": 'Invalid username or Password.'}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         try:
             refresh = RefreshToken()
@@ -266,7 +266,7 @@ class UserRegisterView(viewsets.ViewSet):
             if not all(user_data.values()):
                 return Response({
                     "data": None,
-                    "message":{ "status":400,"description": "Missing required fields"}
+                    "message":{ "status":400,"description": "All fields are required"}
                 }, status=status.HTTP_400_BAD_REQUEST)
             
             # Check for existing cnic, phone, or email
@@ -274,7 +274,7 @@ class UserRegisterView(viewsets.ViewSet):
                 if CustomUser.objects.filter(**{field: user_data[field]}).exists():
                     return Response({
                         "data": None,
-                        "message": {"status": 400, "description": f"{field.capitalize()} already registered"}
+                        "message": {"status": 400, "description": f"{field.capitalize().upper()} already exists"}
                     }, status=status.HTTP_400_BAD_REQUEST)
             
             # Create the user
@@ -623,14 +623,19 @@ class ProofOfResolutionCreateView(generics.CreateAPIView):
         }
         notify(notification_object)
 
-class ProofOfResolutionListView(generics.ListAPIView):
-    serializer_class = ProofOfResolutionSerializer
-    authentication_classes = [TokenOnlyAuthentication]
-    permission_classes=[]
 
-    def get_queryset(self):
+class ProofOfResolutionDetailView(generics.RetrieveAPIView):
+    queryset = ProofOfResolution.objects.all()
+    serializer_class = ProofOfResolutionListSerializer
+    lookup_field = 'id'
+    authentication_classes = []
+    permission_classes = []
+
+    def get_object(self):
         complaint_id = self.request.query_params.get('complaint_id')
-        return ProofOfResolution.objects.filter(complaint__complaint_id=complaint_id)
+        if complaint_id:
+            return ProofOfResolution.objects.get(complaint__complaint_id=complaint_id)
+        return super().get_object()
 
 class FeedbackCreateView(generics.CreateAPIView):
     """API to submit user feedback"""

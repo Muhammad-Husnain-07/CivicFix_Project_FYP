@@ -61,7 +61,7 @@ const ViewComplaintScreen = () => {
             });
             navigation.reset({index: 0, routes: [{name: '(drawer)'}]});
           } catch (err) {
-            console.error('Error updating complaint status:', err.message);
+            console.log('Error updating complaint status:', err.message);
           }
         },
       },
@@ -85,12 +85,12 @@ const ViewComplaintScreen = () => {
 
   const openGoogleMaps = () => {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${complaint.latitude},${complaint.longitude}`;
-    Linking.openURL(url).catch(err => console.error('Failed to open Google Maps', err));
+    Linking.openURL(url).catch(err => console.log('Failed to open Google Maps', err));
   };
 
   const callUser = () => {
     Linking.openURL(`tel:${complaint?.user_phone_number}`).catch(err =>
-      console.error('Failed to open phone app', err),
+      console.log('Failed to open phone app', err),
     );
   };
 

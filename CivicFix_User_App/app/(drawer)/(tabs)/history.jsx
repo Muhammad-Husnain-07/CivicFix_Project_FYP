@@ -14,11 +14,9 @@ export default function HistoryScreen() {
   const [userId, setUserId] = useState(null);
   const [complaints, setComplaints] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState('all');
 
   const getComplaints = async () => {
     try {
-      setLoader(true);
       const res = await apiClient(`/complaints?user_id=${userId}`);
       if (res?.length > 0) {
         setComplaints(
@@ -53,23 +51,26 @@ export default function HistoryScreen() {
 
   useEffect(() => {
     if (userId) {
+      setLoader(true);
       getComplaints();
     }
   }, [userId]);
 
   const handleRefresh = () => {
     setRefreshing(true);
+    setLoader(true);
     getComplaints();
   };
 
-  const handleFilter = value => {
-    setFilter(value);
-    if (value === 'all') {
-      setComplaints(complaints);
-    } else {
-      setComplaints(complaints?.filter(item => item?.status?.toLowerCase() === value));
-    }
-  };
+  useEffect(() => {
+      const handleNavigation = (event) => {
+        if (event?.type === 'focus' && event?.target.includes('history') && userId) {
+          getComplaints();
+        }
+      }
+      navigation.addListener('focus', handleNavigation);
+      return () => navigation.removeListener('focus', handleNavigation);
+    }, [navigation]);
 
   return loader ? (
     <Loader />

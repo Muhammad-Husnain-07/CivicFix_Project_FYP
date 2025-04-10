@@ -34,7 +34,7 @@ const ComplaintForm = () => {
       setError('Please select a status');
       return;
     }
-    if(!image) {
+    if (!image) {
       setError('Please upload proof image');
       return;
     }
@@ -49,7 +49,7 @@ const ComplaintForm = () => {
         uploadImage = base64Image;
       } catch (error) {
         setError('Error reading image file');
-        console.error('Error reading image file:', error);
+        console.log('Error reading image file:', error);
         return;
       }
     }
@@ -66,26 +66,34 @@ const ComplaintForm = () => {
       navigation.reset({index: 0, routes: [{name: '(drawer)'}]});
     } catch (err) {
       setError('Error submitting proof of resolution');
-      console.error('Error submitting proof of resolution:', err.message);
+      console.log(
+        'Error submitting proof of resolution:',
+        err.response.data?.message?.description || err.message || err,
+      );
     }
   };
 
   useEffect(() => {
     if (error) {
-      ToastAndroid.show(error, ToastAndroid.SHORT);
+      ToastAndroid.show(error, ToastAndroid.LONG);
       setError(null);
     }
     if (success) {
-      ToastAndroid.show('Proof of resolution submitted successfully', ToastAndroid.SHORT);
+      ToastAndroid.show('Proof of resolution submitted successfully', ToastAndroid.LONG);
       setSuccess(false);
     }
   }, [error, success]);
 
   return openCamera ? (
-    <Camera onSubmit={(photo) => {setImage(photo); setOpenCamera(false);}} />
+    <Camera
+      onSubmit={photo => {
+        setImage(photo);
+        setOpenCamera(false);
+      }}
+    />
   ) : (
     <ThemedView style={styles.container}>
-       {image && <Image source={{uri: image}} style={styles.imagePreview} />}
+      {image && <Image source={{uri: image}} style={styles.imagePreview} />}
       <ThemedView>
         <ThemedText style={styles.label}>Note</ThemedText>
         <ThemedTextField
@@ -94,6 +102,7 @@ const ComplaintForm = () => {
           placeholder="Enter complaint details here"
           value={note}
           onChangeText={setNote}
+          keyboardType="default"
         />
 
         <ThemedText style={styles.label}>Status</ThemedText>
@@ -145,4 +154,3 @@ const styles = StyleSheet.create({
 });
 
 export default ComplaintForm;
-

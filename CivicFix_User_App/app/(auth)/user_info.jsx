@@ -24,7 +24,7 @@ export default UserInfoScreen = () => {
 
   const showError = error => {
     if (error) {
-      ToastAndroid.show(Object.values(error)[0], ToastAndroid.SHORT);
+      ToastAndroid.show(Object.values(error)[0], ToastAndroid.LONG);
     }
   };
 
@@ -110,11 +110,10 @@ export default UserInfoScreen = () => {
     };
     try {
       await apiClient.post('/users/register', body);
-
-      ToastAndroid.show('User registered successfully', ToastAndroid.SHORT);
+      ToastAndroid.show('User registered successfully', ToastAndroid.LONG);
       navigation.reset({index: 0, routes: [{name: 'login'}]});
     } catch (err) {
-      ToastAndroid.show(err?.response?.data?.message, ToastAndroid.SHORT);
+      ToastAndroid.show(err?.response?.data?.message?.description, ToastAndroid.LONG);
       console.log(err);
     }
   };
@@ -128,6 +127,7 @@ export default UserInfoScreen = () => {
               style={styles.fieldStyling}
               value={user.name}
               onChangeText={text => setUser({...user, name: text})}
+              keyb
             />
           </ThemedView>
           <ThemedView style={styles.fieldContainer}>
@@ -144,6 +144,7 @@ export default UserInfoScreen = () => {
               style={styles.fieldStyling}
               value={user.email}
               onChangeText={text => setUser({...user, email: text})}
+              keyboardType="email-address"
             />
           </ThemedView>
           <ThemedView style={styles.fieldContainer}>
@@ -152,6 +153,7 @@ export default UserInfoScreen = () => {
               style={styles.fieldStyling}
               value={user.phone}
               onChangeText={text => setUser({...user, phone: text})}
+              keyboardType="numeric"
             />
           </ThemedView>
           <ThemedView style={styles.fieldContainer}>
@@ -160,6 +162,7 @@ export default UserInfoScreen = () => {
               style={styles.fieldStyling}
               value={user.address}
               onChangeText={text => setUser({...user, address: text})}
+              multiline={true}
             />
           </ThemedView>
           <ThemedView style={styles.fieldContainer}>
@@ -168,6 +171,7 @@ export default UserInfoScreen = () => {
               style={styles.fieldStyling}
               value={user.password}
               onChangeText={text => setUser({...user, password: text})}
+              keyboardType="default"
             />
           </ThemedView>
           <ThemedView style={styles.fieldContainer}>
@@ -176,6 +180,7 @@ export default UserInfoScreen = () => {
               style={styles.fieldStyling}
               value={user.confirmPassword}
               onChangeText={text => setUser({...user, confirmPassword: text})}
+              keyboardType="default"
             />
           </ThemedView>
           <ThemedView style={styles.buttonContainer}>
