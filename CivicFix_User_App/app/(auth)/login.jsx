@@ -24,13 +24,13 @@ export default LoginScreen = () => {
 
   const handleLogin = async values => {
     if (!values.cnic || !values.password) {
-      ToastAndroid.show('Please enter CNIC and Password', ToastAndroid.SHORT);
+      ToastAndroid.show('Please enter CNIC and Password', ToastAndroid.LONG);
       return;
     }
 
     const cnicRegex = /^[0-9]{13}$/;
     if (!cnicRegex.test(values.cnic)) {
-      ToastAndroid.show('CNIC must be a 13 digit number', ToastAndroid.SHORT);
+      ToastAndroid.show('CNIC must be a 13 digit number', ToastAndroid.LONG);
       return;
     }
     const body = {
@@ -41,7 +41,7 @@ export default LoginScreen = () => {
     };
     try {
       setLoader(true);
-      await axios
+      const res = await axios
         .post(BASE_URL + '/user/login', body, {
           headers: {'Content-Type': 'application/json'},
         })
@@ -51,11 +51,13 @@ export default LoginScreen = () => {
           storeData('refresh_token', user.refresh_token);
           storeData('user_data', user);
           navigation.reset({index: 0, routes: [{name: '(drawer)'}]});
+          setCredentials({cnic: '', password: ''});
           setLoader(false);
+          ToastAndroid.show('Login successful', ToastAndroid.LONG);
         });
     } catch (err) {
       setLoader(false);
-      ToastAndroid.show(err.message, ToastAndroid.SHORT);
+      ToastAndroid.show(err?.response?.data?.message?.description || 'Something went wrong. Please try again.', ToastAndroid.LONG);
     }
   };
 
@@ -68,13 +70,15 @@ export default LoginScreen = () => {
         <ThemedText type="subtitle">Login</ThemedText>
         <ThemedView style={styles.fieldContainer}>
           <ThemedTextField
-            placeholder="CNIC"
+            placeholder="CNIC (Without dashes)"
             style={styles.fieldStyling}
             onChangeText={text =>
               setCredentials(prevState => {
                 return {...prevState, cnic: text};
               })
             }
+            value={credentials.cnic}
+            keyboardType="numeric"
           />
         </ThemedView>
         <ThemedView style={styles.fieldContainer}>
@@ -87,6 +91,8 @@ export default LoginScreen = () => {
               })
             }
             secureTextEntry={!showPassword}
+            value={credentials.password}
+            keyboardType="default"
           />
         </ThemedView>
         <ThemedView style={{display: 'flex'}}>
@@ -108,7 +114,7 @@ export default LoginScreen = () => {
           <ThemedButton
             type="outlined"
             title="Login"
-            onPress={() => handleLogin(credentials)}
+            onPress={() =>{handleLogin(credentials)}}
             style={styles.buttonStyling}
           />
         </ThemedView>

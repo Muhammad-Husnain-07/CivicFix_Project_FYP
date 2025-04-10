@@ -62,7 +62,7 @@ const ViewComplaintScreen = () => {
 
   const callUser = () => {
     Linking.openURL(`tel:${complaint?.team_member_phone_number}`).catch(err =>
-      console.error('Failed to open phone app', err),
+      console.log('Failed to open phone app', err),
     );
   };
 
@@ -157,6 +157,20 @@ const ViewComplaintScreen = () => {
               </ThemedView>
             )
           ) : null}
+          {complaint?.status?.toLowerCase() === 'resolved' ||
+          complaint?.status?.toLowerCase() === 'closed' ? (
+            <ThemedView style={styles.buttonContainer}>
+              <ThemedButton
+                title="View Resolution Proof"
+                onPress={() =>
+                  navigation.navigate('(complaint)', {
+                    screen: 'resolution_proof',
+                    params: {complaint_id: complaintId},
+                  })
+                }
+              />
+            </ThemedView>
+          ) : null}
           <Modal visible={modalVisible} transparent={true} animationType="fade">
             <ThemedView style={styles.modalContainer}>
               <Image
@@ -232,7 +246,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {marginBottom: 6, fontWeight: 'bold', fontSize: 14, color: '#ECEDEE'},
   detailValue: {color: '#ADB5BD', fontSize: 14},
-  buttonContainer: {alignItems: 'center', marginTop: 10, marginBottom: 30, gap: 16},
+  buttonContainer: {alignItems: 'center', marginTop: 10, marginBottom: 20, gap: 16},
   imageContainer: {alignItems: 'center', marginVertical: 20},
   imagePreview: {width: 200, height: 200, resizeMode: 'contain', borderRadius: 12},
   modalContainer: {

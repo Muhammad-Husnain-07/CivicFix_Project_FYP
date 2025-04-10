@@ -5,11 +5,11 @@ from .views import ObtainTokenView, RefreshTokenView
 
 urlpatterns = [
     # User Endpoints
-    path('api/users/register', UserRegisterView.as_view({'post': 'register'}) ,name='user-register'),
+    path('api/users/register', UserRegisterView.as_view({'post': 'register'}), name='user-register'),
     
     # Complaint Endpoints
-    path('api/users/create-complaint', ComplaintViewSet.as_view({'post': 'createComplaint'}) ,name='create-complaint'),
-    path('api/users/detect-complaint-type', ComplaintViewSet.as_view({'post': 'detectComplaintType'}) ,name='detect-complaint-type'),
+    path('api/users/create-complaint', ComplaintViewSet.as_view({'post': 'createComplaint'}), name='create-complaint'),
+    path('api/users/detect-complaint-type', ComplaintViewSet.as_view({'post': 'detectComplaintType'}), name='detect-complaint-type'),
     path('api/complaints/<int:pk>/update', ComplaintUpdateView.as_view(), name='complaint-update'),
     path('api/complaints/<int:pk>', ComplaintGetView.as_view(), name='complaint-get'),
     path('api/complaints', ComplaintListView.as_view(), name='complaint-list'),
@@ -23,20 +23,30 @@ urlpatterns = [
     
     # URL
     path('api/teamusers-available', TeamUserWithoutTeamListView.as_view(), name='teamuser-without-team'),
+    # List of all teams by department
     path('api/teams/list', TeamListByDepartmentView.as_view(), name='team-list-by-department'),
-    path('api/team/create', Teamcreateview.as_view(), name='teamuser-create'),
+    # Create team
+    path('api/team/create', Teamcreateview.as_view(), name='team-create'),
+    # Update team
     path('api/team/<int:pk>/update', TeamUpdateView.as_view(), name='team-update'),
+    # List of all team users
     path('api/teamusers', TeamuserListView.as_view(), name='teamuser-list'),
+    # Create team user
     path('api/teamusers/create', TeamuserCreateView.as_view(), name='teamuser-create'),
+    # Update team user
     path('api/teamusers/<int:pk>/update', TeamuserUpdateView.as_view(), name='teamuser-update'),
+    # Delete team user
     path('api/teamusers/<int:pk>/delete', TeamuserDeleteView.as_view(), name='teamuser-delete'),
     
+    # Department Endpoints
     path('api/departments/create', DepartmentCreateView.as_view(), name='department-create'),
     path('api/departments', DepartmentListView.as_view(), name='department-list'),
     
+    # Proof of Resolution Endpoints
     path('api/proof-of-resolution', ProofOfResolutionCreateView.as_view(), name='proof-create'),
-    path('api/get-proof-of-resolution',ProofOfResolutionListView.as_view(), name='proof-by-complaint-id'),
+    path('api/get-proof-of-resolution',ProofOfResolutionDetailView.as_view(), name='proof-by-complaint-id'),
     
+    # Feedback Endpoints
     path('api/feedback', FeedbackCreateView.as_view(), name='feedback-create'),   # Add Feedback
     path('api/feedback/all', FeedbackListView.as_view(), name='feedback-list'),   # Get All Feedback
     path('api/feedback/<int:pk>', FeedbackDetailView.as_view(), name='feedback-detail'),  # Get Feedback by ID
@@ -51,3 +61,4 @@ urlpatterns = [
     path('api/department-complaint-stats', DepartmentComplaintStatsView.as_view(), name='department-complaint-pie-stats'),
     path("api/department-monthly-stats", DepartmentMonthlyStatsView.as_view(), name="department-monthly--multi-line-stats"),
 ]
+

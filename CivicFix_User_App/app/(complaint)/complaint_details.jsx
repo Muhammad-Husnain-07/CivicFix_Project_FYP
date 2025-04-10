@@ -13,7 +13,7 @@ import Loader from '@/components/Loader';
 import Map from '@/components/Map';
 import {ThemedText} from '@/components/ThemedText';
 
-const getComplaintOptions = (complaintClass) => {
+const getComplaintOptions = complaintClass => {
   switch (complaintClass) {
     case 'SNGPL':
       return SNGPL_COMPLAINT_OPTIONS;
@@ -32,7 +32,7 @@ const ViewMap = ({setLocation, onSubmit}) => {
       setLocation(pickedLocation);
       onSubmit();
     } else {
-      ToastAndroid.show('Please pick a location on the map', ToastAndroid.SHORT);
+      ToastAndroid.show('Please pick a location on the map', ToastAndroid.LONG);
     }
   };
   return (
@@ -56,6 +56,7 @@ export default ComplaintDetailScreen = () => {
   const [complaintDetails, setComplaintDetails] = useState('');
   const [location, setLocation] = useState(null);
   const [complaintTypes, setComplaintTypes] = useState([]);
+  const [detectedText, setDetectedText] = useState(params?.ocr_text);
 
   useEffect(() => {
     setComplaintOptions(getComplaintOptions(params?.complaint_class));
@@ -63,14 +64,15 @@ export default ComplaintDetailScreen = () => {
 
   useEffect(() => {
     if (complaintCategory) {
-      const complaintTypeOptions = complaintOptions?.find(item => item.value === complaintCategory)?.types || [];
+      const complaintTypeOptions =
+        complaintOptions?.find(item => item.value === complaintCategory)?.types || [];
       setComplaintTypes(complaintTypeOptions);
     }
   }, [complaintCategory]);
 
   const handleSubmitComplaint = async () => {
     if (!location) {
-      ToastAndroid.show('Please select a location', ToastAndroid.SHORT);
+      ToastAndroid.show('Please select a location', ToastAndroid.LONG);
       return;
     }
 
@@ -82,7 +84,7 @@ export default ComplaintDetailScreen = () => {
         });
         uploadImage = base64Image;
       } catch (error) {
-        console.error('Error reading image file:', error);
+        console.log('Error reading image file:', error);
       }
     }
     const user = await getData('user_data');
@@ -94,9 +96,9 @@ export default ComplaintDetailScreen = () => {
         complaint_category: complaintOptions?.find(item => item.value === complaintCategory)?.label,
         complaint_type: complaintTypes?.find(item => item.value === complaintType)?.label,
         complaint_details: complaintDetails,
-        ref_number: RegExp(/.*(?=:)/).test(params?.ocr_text)
-          ? params?.ocr_text?.replace(/.*(?=:)/, '')
-          : params?.ocr_text,
+        ref_number: RegExp(/.*(?=:)/).test(detectedText)
+          ? detectedText?.replace(/.*(?=:)/, '')
+          : detectedText,
         status: 'PENDING',
         upload_image: uploadImage,
         latitude: location?.latitude,
@@ -111,13 +113,41 @@ export default ComplaintDetailScreen = () => {
       if (params?.localImagePath) {
         await FileSystem.deleteAsync(params?.localImagePath, {idempotent: true});
       }
-      ToastAndroid.show('Complaint submitted successfully', ToastAndroid.SHORT);
+      ToastAndroid.show('Complaint submitted successfully', ToastAndroid.LONG);
       navigation.reset({index: 0, routes: [{name: '(drawer)'}]});
       setLoader(false);
     } catch (err) {
       setLoader(false);
-      ToastAndroid.show(err.message, ToastAndroid.SHORT);
+      ToastAndroid.show(
+        err?.response?.data?.message?.description ||
+          'Something went wrong. Please try again later.',
+        ToastAndroid.LONG,
+      );
     }
+  };
+
+  const validateDetectedText = text => {
+    if (params?.complaint_class === 'SNGPL') {
+      const regex = /^[a-zA-Z0-9]+$/;
+      if (!regex.test(text)) {
+        ToastAndroid.show(
+          'Meter number should only contain alphanumeric characters',
+          ToastAndroid.LONG,
+        );
+        return false;
+      }
+    }
+    if (params?.complaint_class === 'LESCO') {
+      const regex = /^[a-zA-Z0-9]+$/;
+      if (!regex.test(text)) {
+        ToastAndroid.show(
+          'Reference number should only contain alphanumeric characters',
+          ToastAndroid.LONG,
+        );
+        return false;
+      }
+    }
+    return true;
   };
 
   return loader ? (
@@ -155,8 +185,12 @@ export default ComplaintDetailScreen = () => {
           <ThemedTextField
             placeholder="Enter Meter Number"
             style={styles.fieldStyling}
-            value={params?.ocr_text}
-            disabled
+            value={detectedText}
+            onChangeText={text => {
+              if (validateDetectedText(text)) {
+                setDetectedText(text);
+              }
+            }}
           />
         </ThemedView>
       )}
@@ -165,8 +199,12 @@ export default ComplaintDetailScreen = () => {
           <ThemedTextField
             placeholder="Enter Reference Number"
             style={styles.fieldStyling}
-            value={params?.ocr_text}
-            disabled
+            value={detectedText}
+            onChangeText={text => {
+              if (validateDetectedText(text)) {
+                setDetectedText(text);
+              }
+            }}
           />
         </ThemedView>
       )}
@@ -184,15 +222,18 @@ export default ComplaintDetailScreen = () => {
           title="Submit"
           onPress={() => {
             if (!complaintCategory) {
-              ToastAndroid.show('Please select a complaint category', ToastAndroid.SHORT);
+              ToastAndroid.show('Please select a complaint category', ToastAndroid.LONG);
               return;
             }
             if (!complaintType) {
-              ToastAndroid.show('Please select a complaint type', ToastAndroid.SHORT);
+              ToastAndroid.show('Please select a complaint type', ToastAndroid.LONG);
               return;
             }
             if (!complaintDetails) {
-              ToastAndroid.show('Please enter complaint details', ToastAndroid.SHORT);
+              ToastAndroid.show('Please enter complaint details', ToastAndroid.LONG);
+              return;
+            }
+            if (!validateDetectedText(detectedText)) {
               return;
             }
             setShowMap(true);
@@ -230,4 +271,3 @@ const styles = StyleSheet.create({
     maxWidth: 400,
   },
 });
-

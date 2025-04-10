@@ -17,7 +17,6 @@ export default function HomeScreen() {
 
   const getComplaints = async () => {
     try {
-      setLoader(true);
       const res = await apiClient(`/complaints?user_id=${userId}`);
       if (res?.length > 0) {
         setComplaints(
@@ -51,14 +50,26 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (userId) {
+      setLoader(true);
       getComplaints();
     }
   }, [userId]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
+    setLoader(true);
     getComplaints().then(() => setRefreshing(false));
   }, [userId]);
+
+  useEffect(() => {
+    const handleNavigation = (event) => {
+      if (event?.type === 'focus' && event?.target.includes('index') && userId) {
+        getComplaints();
+      }
+    }
+    navigation.addListener('focus', handleNavigation);
+    return () => navigation.removeListener('focus', handleNavigation);
+  }, [navigation]);
 
   return loader ? (
     <Loader />

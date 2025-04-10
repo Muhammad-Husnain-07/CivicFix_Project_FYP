@@ -20,7 +20,6 @@ export default function FeedbackScreen({lightColor, darkColor}) {
 
   const getComplaints = async () => {
     try {
-      setLoader(true);
       const res = await apiClient(`/complaints?user_id=${userId}`);
       if (res?.length > 0) {
         setComplaints(
@@ -55,14 +54,26 @@ export default function FeedbackScreen({lightColor, darkColor}) {
 
   useEffect(() => {
     if (userId) {
+      setLoader(true);
       getComplaints();
     }
   }, [userId]);
 
   const handleRefresh = () => {
     setRefreshing(true);
+    setLoader(true);
     getComplaints();
   };
+
+    useEffect(() => {
+        const handleNavigation = (event) => {
+          if (event?.type === 'focus' && event?.target.includes('feedback') && userId) {
+            getComplaints();
+          }
+        }
+        navigation.addListener('focus', handleNavigation);
+        return () => navigation.removeListener('focus', handleNavigation);
+      }, [navigation]);
 
   return loader ? (
     <Loader />

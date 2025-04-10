@@ -24,7 +24,7 @@ export default LoginScreen = () => {
 
   const handleLogin = async values => {
     if (!values.email || !values.password) {
-      ToastAndroid.show('Please fill in all fields', ToastAndroid.SHORT);
+      ToastAndroid.show('Please fill in all fields', ToastAndroid.LONG);
       return;
     }
     const isValidEmail = email => {
@@ -33,7 +33,7 @@ export default LoginScreen = () => {
     };
 
     if (!isValidEmail(values.email)) {
-      ToastAndroid.show('Please enter a valid email address', ToastAndroid.SHORT);
+      ToastAndroid.show('Please enter a valid email address', ToastAndroid.LONG);
       return;
     }
 
@@ -51,18 +51,17 @@ export default LoginScreen = () => {
         })
         .then(res => {
           const user = res.data.data;
-          console.log(res)
           storeData('access_token', user.access_token);
           storeData('refresh_token', user.refresh_token);
           storeData('user_data', user);
           navigation.reset({index: 0, routes: [{name: '(drawer)'}]});
-          ToastAndroid.show('Login successful', ToastAndroid.SHORT);
+          ToastAndroid.show('Login successful', ToastAndroid.LONG);
           setLoader(false);
         });
     } catch (err) {
-      console.log(err);
+      console.log(err?.response?.data?.message?.description);
       setLoader(false);
-      ToastAndroid.show("Login failed", ToastAndroid.SHORT);
+      ToastAndroid.show(err?.response?.data?.message?.description || 'Something went wrong', ToastAndroid.LONG);
     }
   };
 
@@ -84,6 +83,8 @@ export default LoginScreen = () => {
                 return {...prevState, email: text};
               })
             }
+            value={credentials.email}
+            keyboardType="email-address"
           />
         </ThemedView>
         <ThemedView style={[styles.fieldContainer, {alignItems: 'center'}]}>
@@ -96,6 +97,8 @@ export default LoginScreen = () => {
                 return {...prevState, password: text};
               })
             }
+            value={credentials.password}
+            keyboardType="default"
           />
         </ThemedView>
         <ThemedView style={{display: 'flex'}}>

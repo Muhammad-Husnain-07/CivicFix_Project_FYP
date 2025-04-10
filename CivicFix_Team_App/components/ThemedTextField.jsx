@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, TextInput} from 'react-native';
+import {StyleSheet, TextInput, View} from 'react-native';
 import {useThemeColor} from '@/hooks/useThemeColor';
 
 export default ThemedTextField = ({style, lightColor, darkColor, ...otherProps}) => {
@@ -8,29 +8,29 @@ export default ThemedTextField = ({style, lightColor, darkColor, ...otherProps})
   const textColor = useThemeColor({light: lightColor, dark: darkColor}, 'inputText');
 
   return (
-    <TextInput
-      style={[
-        {backgroundColor, borderColor, color: textColor},
-        otherProps.multiline ? InputFieldStyle.inputMultiline : InputFieldStyle.input, // Base input styles
-        style, // Additional styles
-      ]}
-      placeholderTextColor={useThemeColor({light: '#9BA1A6', dark: '#6C757D'}, 'placeholder')} // Placeholder color
-      {...otherProps}
-    />
+    <View style={{flexDirection: 'row'}}>
+      <TextInput
+        style={[
+          {backgroundColor, borderColor, color: textColor, flex: 1}, // Base input styles
+          otherProps.multiline ? InputFieldStyle.inputMultiline : InputFieldStyle.input,
+          style, // Additional styles
+        ]}
+        placeholderTextColor={useThemeColor({light: '#9BA1A6', dark: '#6C757D'}, 'placeholder')} // Placeholder color
+        {...otherProps}
+      />
+    </View>
   );
 };
 
 const InputFieldStyle = StyleSheet.create({
   input: {
-    width: '100%',
-    minWidth: 200,
-    maxWidth: 300,
     height: 40,
     margin: 12,
     borderWidth: 1,
     padding: 10,
     borderRadius: 4,
     fontSize: 16,
+    flex: 1,
   },
   inputMultiline: {
     height: 150,
@@ -40,8 +40,7 @@ const InputFieldStyle = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 4,
     margin: 12,
-    width: '100%',
-    minWidth: 200,
-    maxWidth: 300,
+    flex: 1,
   },
 });
+

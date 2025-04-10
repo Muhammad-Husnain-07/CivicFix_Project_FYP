@@ -105,7 +105,7 @@ class ProofOfResolutionSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProofOfResolution
         fields = ['proof_image', 'proof_description', 'complaint_id', 'resolved_status', 'status']
-
+    
     def create(self, validated_data):
         complaint = validated_data.pop('complaint')
         resolved_status = validated_data.pop('resolved_status')
@@ -123,6 +123,10 @@ class ProofOfResolutionSerializer(serializers.ModelSerializer):
         )
         return proof
 
+class ProofOfResolutionListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProofOfResolution
+        fields = ['proof_id', 'complaint', 'proof_image', 'proof_description', 'date_uploaded']
 
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
