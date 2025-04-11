@@ -148,3 +148,9 @@ class FeedbackSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Rating must be between 1 and 5")
         return value
 
+class ComplaintCoordSerializer(serializers.ModelSerializer):
+    department_name = serializers.CharField(source='department.department_name', read_only=True)
+
+    class Meta:
+        model = Complaint
+        fields = ['complaint_id', 'latitude', 'longitude', 'department_name']

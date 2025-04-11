@@ -1,30 +1,27 @@
-import styled from "@emotion/styled";
-import { withTheme } from "@emotion/react";
-import { MoreVertical } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   MapContainer,
   TileLayer,
   Marker,
+  CircleMarker,
   Popup,
   Tooltip,
-  useMapEvents,
   useMap,
+  useMapEvents,
 } from "react-leaflet";
-import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { Box, Container } from "@mui/material";
+import L from "leaflet";
 import {
   Card as MuiCard,
   CardContent as MuiCardContent,
   CardHeader,
   IconButton,
+  Container,
 } from "@mui/material";
+import styled from "@emotion/styled";
 import { spacing } from "@mui/system";
-import RedMarker from "/static/img/red-marker-512.png";
-import BlueMarker from "/static/img/blue-marker-512.png";
+import apiClient from "../../../utils/axiosConfig";
 
-// Custom styles for Card and CardContent
 const Card = styled(MuiCard)(spacing);
 
 const CardContent = styled(MuiCardContent)`
@@ -34,131 +31,142 @@ const CardContent = styled(MuiCardContent)`
   }
 `;
 
-const UAE_CENTER = [23.4241, 53.8478]; // Center of UAE
+const groupComplaints = (complaints, precision = 3) =>
+  Object.values(
+    complaints.reduce((grouped, complaint) => {
+      const key = `${complaint.latitude.toFixed(precision)},${complaint.longitude.toFixed(
+        precision
+      )}`;
+      if (!grouped[key]) {
+        grouped[key] = {
+          lat: parseFloat(complaint.latitude.toFixed(precision)),
+          lng: parseFloat(complaint.longitude.toFixed(precision)),
+          count: 1,
+          department: complaint.department_name,
+          complaints: [complaint],
+        };
+      } else {
+        grouped[key].count += 1;
+        grouped[key].complaints.push(complaint);
+      }
+      return grouped;
+    }, {})
+  );
 
-const regions = [
-  {
-    id: 1,
-    name: "Abu Dhabi",
-    coords: [24.4539, 54.3773],
-    branches: [
-      { id: "1-1", name: "Abu Dhabi Branch 1", coords: [24.4539, 54.3773] },
-      { id: "1-2", name: "Abu Dhabi Branch 2", coords: [24.4545, 54.3775] },
-      { id: "1-3", name: "Abu Dhabi ATM 1", coords: [24.455, 54.3778] },
-    ],
-  },
-  {
-    id: 2,
-    name: "Dubai",
-    coords: [25.276987, 55.296249],
-    branches: [
-      { id: "2-1", name: "Dubai Branch 1", coords: [25.276987, 55.296249] },
-      { id: "2-2", name: "Dubai Branch 2", coords: [25.27705, 55.29628] },
-      { id: "2-3", name: "Dubai ATM 1", coords: [25.27695, 55.2962] },
-    ],
-  },
-  // Add more regions and branches/ATMs as needed
-];
+const MapComponent = ({ theme, filter }) => {
+  const [complaints, setComplaints] = useState([]);
+  const [center, setCenter] = useState([31.5497, 74.3436]); // Lahore center
+  const [zoom, setZoom] = useState(11);
+  const mapRef = React.createRef();
 
-// Custom icons
-const bankIcon = new L.Icon({
-  iconUrl: RedMarker,
-  iconSize: [38, 38],
-  iconAnchor: [22, 22],
-  popupAnchor: [-3, -22],
-});
-
-const branchIcon = new L.Icon({
-  iconUrl: BlueMarker,
-  iconSize: [30, 30],
-  iconAnchor: [15, 15],
-  popupAnchor: [-3, -15],
-});
-
-const MapComponent = (props) => {
-  const [zoomLevel, setZoomLevel] = useState(5);
-  const [activeRegion, setActiveRegion] = useState(null);
-
-  const MapUpdater = ({ center, zoom }) => {
-    const map = useMap();
-    map.flyTo(center, zoom, { animate: true });
-    return null;
-  };
-
-  const handleMapClick = (region) => {
-    setActiveRegion(region);
-    setZoomLevel(16); // Zoom in to the region
-  };
-
-  const handleBranchClick = (branch) => {
-    console.log(branch);
-  };
-
-  const MapEventsHandler = () => {
-    const map = useMapEvents({
-      zoomend: () => {
-        setZoomLevel(map.getZoom());
-      },
-    });
-    return null;
-  };
-
-  const allBranches = regions.flatMap((region) => region.branches);
-
-  return (
-    <Card mb={6} style={{ height: "95%", width: "100%" }}>
-      <CardHeader
-        action={
-          <IconButton aria-label="settings" size="large">
-            <MoreVertical />
-          </IconButton>
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await apiClient("/complaints/map-coords?department=SNGPL&filter=" + filter);
+        if (response) {
+          setComplaints(response);
         }
-        title="Map of UAE"
+      } catch (error) {
+        console.error("Failed to fetch complaints", error);
+        setComplaints([]);
+      }
+    };
+
+    fetchData();
+  }, [filter, theme]);
+
+  useEffect(() => {
+    const mapInstance = mapRef.current;
+    if (mapInstance) {
+      const handleZoom = () => setZoom(mapInstance.getZoom());
+      mapInstance.on("zoomend", handleZoom);
+      mapInstance.on("zoom", handleZoom);
+      return () => {
+        mapInstance.off("zoomend", handleZoom);
+        mapInstance.off("zoom", handleZoom);
+      };
+    }
+  }, [mapRef]);
+
+  const grouped = groupComplaints(complaints);
+  return (
+    <Card mb={6} style={{ height: 500, width: "100%" }}>
+      <CardHeader
+        title="Complaints Highlight on Map"
       />
       <CardContent style={{ height: "90%", width: "100%" }}>
         <Container style={{ height: "90%", width: "100%" }}>
           <MapContainer
-            center={UAE_CENTER}
-            zoom={zoomLevel}
-            scrollWheelZoom={true}
+            center={center}
+            zoom={zoom}
+            scrollWheelZoom
             style={{ height: "100%", width: "100%" }}
+            ref={mapRef}
+            maxZoom={16}
+            maxNativeZoom={16}
+            maxBounds={[
+              [24.5271, 66.3754],
+              [36.0882, 77.0927],
+            ]}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
             />
-            <MapEventsHandler />
-            {zoomLevel < 14 &&
-              regions.map((region) => (
-                <Marker
-                  key={region.id}
-                  position={region.coords}
-                  icon={bankIcon}
+
+            {zoom < 16 &&
+              grouped.map((group, i) => (
+                <CircleMarker
+                  key={i}
+                  center={[group.lat, group.lng]}
+                  radius={5 + group.count * 3}
+                  pathOptions={{
+                    color: group.department === "LESCO" ? "#e74c3c" : "#2980b9",
+                    fillColor: group.department === "LESCO" ? "#fadbd8" : "#d6eaf8",
+                    fillOpacity: 0.7,
+                  }}
                   eventHandlers={{
-                    click: () => handleMapClick(region),
+                    click: (e) => {
+                      mapRef.current?.panTo([e.latlng.lat, e.latlng.lng]);
+                    },
                   }}
                 >
-                  <Popup>{region.name}</Popup>
-                  <Tooltip>{region.name}</Tooltip>
-                </Marker>
+                  <Popup>
+                    <strong>{group.department}</strong>
+                    <br />
+                    Complaints: {group.count}
+                  </Popup>
+                  <Tooltip>{`${group.department}: ${group.count}`}</Tooltip>
+                </CircleMarker>
               ))}
-            {zoomLevel >= 14 &&
-              allBranches.map((branch) => (
+
+            {zoom >= 16 &&
+              complaints.map((complaint) => (
                 <Marker
-                  key={branch.id}
-                  position={branch.coords}
-                  icon={branchIcon}
+                  key={complaint.complaint_id}
+                  position={[complaint.latitude, complaint.longitude]}
+                  icon={L.divIcon({
+                    className: "custom-marker",
+                    html: `<div style="background:${
+                      complaint.department_name === "LESCO" ? "#e74c3c" : "#2980b9"
+                    };width:14px;height:14px;border-radius:50%"></div>`,
+                  })}
                   eventHandlers={{
-                    click: () => handleBranchClick(branch),
+                    click: (e) => {
+                      mapRef.current?.panTo([e.latlng.lat, e.latlng.lng]);
+                    },
                   }}
                 >
-                  <Popup>{branch.name}</Popup>
-                  <Tooltip>{branch.name}</Tooltip>
+                  <Popup>
+                    <strong>{complaint.department_name}</strong>
+                    <br />
+                    Complaint ID: {complaint.complaint_id}
+                  </Popup>
+                  <Tooltip>
+                    {`Complaint ID: ${complaint.complaint_id}`}
+                  </Tooltip>
                 </Marker>
               ))}
-            {zoomLevel >= 14 && activeRegion && (
-              <MapUpdater center={activeRegion.coords} zoom={zoomLevel} />
-            )}
           </MapContainer>
         </Container>
       </CardContent>
@@ -166,4 +174,5 @@ const MapComponent = (props) => {
   );
 };
 
-export default withTheme(MapComponent);
+export default MapComponent;
+

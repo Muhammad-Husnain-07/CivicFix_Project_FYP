@@ -193,7 +193,7 @@ function LineChart({ theme, filter }) {
             <MoreVertical />
           </IconButton>
         }
-        title="Complaints"
+        title="Line Chart"
       />
       <CardContent>
         <ChartWrapper>

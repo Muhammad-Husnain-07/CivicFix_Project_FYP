@@ -40,7 +40,7 @@ const Auth = ({ children }) => {
     const isAuthPage = ["/admin-sign-in", "/sub-admin-sign-in"]?.includes(
       window.location.pathname
     );
-console.log(window.location.pathname);  
+
     if (!localStorage.getItem("access_token") && !isAuthPage) {
       navigate("/admin-sign-in");
     }

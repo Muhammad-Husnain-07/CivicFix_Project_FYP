@@ -136,19 +136,6 @@ function Demos() {
           <Demo title="Indigo" themeVariant={THEMES.INDIGO} />
         </Grid>
       </Box>
-
-      {/* <Box my={3} mx={6}>
-        <Button
-          component={Link}
-          to="/documentation/welcome"
-          variant="outlined"
-          size="large"
-          target="_blank"
-          fullWidth={true}
-        >
-          Documentation
-        </Button>
-      </Box> */}
     </Wrapper>
   );
 }

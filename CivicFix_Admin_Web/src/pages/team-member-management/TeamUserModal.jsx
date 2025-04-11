@@ -8,8 +8,6 @@ import {
   IconButton,
   Grid,
   Button,
-  FormHelperText,
-  Snackbar,
 } from "@mui/material";
 import { X } from "lucide-react";
 import apiClient from "../../utils/axiosConfig";
@@ -95,7 +93,13 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
           })
           .catch((error) => {
             console.log(error);
-            Toast("Error creating user", "error");
+            Toast(
+              error?.response?.data?.email?.[0] ??
+                error?.response?.data?.phone?.[0] ??
+                error?.message ??
+                "Error creating user",
+              "error"
+            );
           });
       }
     } catch (error) {
@@ -216,4 +220,3 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
 };
 
 export default TeamModal;
-

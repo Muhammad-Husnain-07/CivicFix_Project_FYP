@@ -49,11 +49,12 @@ urlpatterns = [
     # Feedback Endpoints
     path('api/feedback', FeedbackCreateView.as_view(), name='feedback-create'),   # Add Feedback
     path('api/feedback/all', FeedbackListView.as_view(), name='feedback-list'),   # Get All Feedback
-    path('api/feedback/<int:pk>', FeedbackDetailView.as_view(), name='feedback-detail'),  # Get Feedback by ID
+    path('api/feedback/get', FeedbackByComplaintIdView.as_view(), name='feedback-detail'),  # Get Feedback by Complaint ID
 
 
     # Charts Stats
     path('api/complaints/stats', ComplaintStatsView.as_view(), name='complaint-stats'),
+    path('api/complaints/map-coords', ComplaintCoordsMapView.as_view(), name='complaint-map-coords'),
     path('api/complaints/bar-chart-stats', ComplaintBarChartStatsView.as_view(), name='complaint-bar-chart-stats'),
     path('api/complaints/pie-chart-stats', ComplaintPieChartStatsView.as_view(), name='complaint-pie-chart-stats'),
     path('api/complaints/line-chart-stats', ComplaintLineChartStatsView.as_view(), name='complaint-line-chart-stats'),

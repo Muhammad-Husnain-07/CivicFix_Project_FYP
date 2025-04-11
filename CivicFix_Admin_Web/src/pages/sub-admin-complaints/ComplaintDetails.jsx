@@ -18,16 +18,15 @@ import {
   InputLabel,
   IconButton,
   CardActions,
-  Snackbar,
   FormHelperText,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import apiClient from "../../utils/axiosConfig";
 import CloseIcon from "@mui/icons-material/Close";
 import Toast from "../../components/snackbar/Toast";
-import { Help } from "@mui/icons-material";
 import Loader from "../../components/Loader";
-import { set } from "date-fns";
 
 const style = {
   position: "absolute",
@@ -55,7 +54,8 @@ const renderDetail = (label, value, isChip = false) => (
             ? "warning"
             : value?.toLowerCase() === "in progress"
             ? "info"
-            : value?.toLowerCase() === "resolved" || value?.toLowerCase() === "completed"
+            : value?.toLowerCase() === "resolved" ||
+              value?.toLowerCase() === "completed"
             ? "success"
             : "error"
         }
@@ -72,6 +72,9 @@ const renderDetail = (label, value, isChip = false) => (
 
 const ComplaintDetails = ({ selectedRow, open, setOpen, teams, fetchData }) => {
   const [complaint, setComplaint] = useState(null);
+  const [proofDetails, setProofDetails] = useState(null);
+  const [review, setReview] = useState(null);
+  const [tabValue, setTabValue] = useState(0);
   const [assignedTeamId, setAssignedTeamId] = useState(
     selectedRow?.assigned_team_id
   );
@@ -109,6 +112,7 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams, fetchData }) => {
   const handleClose = () => {
     setOpen(false);
     setComplaint(null);
+    setTabValue(0);
   };
 
   const getComplaint = (complaintId) => {
@@ -119,11 +123,39 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams, fetchData }) => {
     });
   };
 
+  const getProofOfResolution = (complaintId) => {
+    apiClient
+      .get(`/get-proof-of-resolution?complaint_id=${complaintId}`)
+      .then((response) => {
+        if (response) {
+          setProofDetails(response);
+        }
+      });
+  };
+
+  const getReview = (complaintId) => {
+    apiClient
+      .get(`/feedback/get?complaint_id=${complaintId}`)
+      .then((response) => {
+        if (response) {
+          setReview(response);
+        }
+      });
+  };
+
   useEffect(() => {
     if (selectedRow) {
       getComplaint(selectedRow.complaint_id);
+      getProofOfResolution(selectedRow.complaint_id);
+      getReview(selectedRow.complaint_id);
     }
   }, [selectedRow]);
+
+  const handleTabChange = (event, newValue) => {
+    if (!review) return;
+    if (!proofDetails) return;
+    setTabValue(newValue);
+  };
 
   return (
     <Modal
@@ -154,84 +186,220 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams, fetchData }) => {
           {!complaint ? (
             <Loader />
           ) : (
-            <>
-              {" "}
-              <Grid container spacing={4}>
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={3}>
-                    {renderDetail("Complaint ID", complaint?.complaint_id)}
-                    {renderDetail("Department", complaint?.department)}
-                    {renderDetail("Reference Number", complaint?.ref_number)}
-                    {renderDetail("Category", complaint?.complaint_category)}
-                    {renderDetail("Type", complaint?.complaint_type)}
-                    {renderDetail("Details", complaint?.complaint_details)}
-                    {renderDetail(
-                      "Date",
-                      new Date(complaint?.submission_date).toLocaleDateString()
-                    )}
-                    {renderDetail("Status", complaint?.status, true)}
-                  </Stack>
-                </Grid>
-                <Grid
-                  item
-                  xs={12}
-                  md={6}
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
+            <Grid container spacing={4}>
+              <Grid item xs={12}>
+                <Tabs
+                  value={tabValue}
+                  onChange={handleTabChange}
+                  aria-label="basic tabs example"
+                  variant="scrollable"
+                  scrollButtons="auto"
                 >
-                  <CardMedia
-                    component="img"
-                    image={`data:image/jpeg;base64,${complaint?.image_url}`}
-                    alt="Complaint Image"
-                    sx={{
-                      width: "100%",
-                      height: "350px",
-                      borderRadius: "8px",
-                      boxShadow: 3,
-                      objectFit: "contain",
+                  <Tab label="Complaint Details" />
+                  <Tab
+                    label="Proof of Resolution"
+                    onClick={() => {
+                      if (!proofDetails) {
+                        Toast(
+                          "Proof of Resolution has not been submitted by the assigned team.",
+                          "warning"
+                        );
+                      }
                     }}
                   />
-                </Grid>
+                  <Tab
+                    label="User Feedback"
+                    onClick={() => {
+                      if (!review) {
+                        Toast(
+                          "User Feedback has not been submitted by the user.",
+                          "warning"
+                        );
+                      }
+                    }}
+                  />
+                </Tabs>
               </Grid>
-              <Divider sx={{ my: 3 }} />
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Assign Team
-              </Typography>
-              <Box display="flex" justifyContent="space-between">
-                <FormControl sx={{ m: 1, minWidth: 250 }}>
-                  <InputLabel id="assigned-team-label">Assign Team</InputLabel>
-                  <Select
-                    labelId="assigned-team-label"
-                    value={assignedTeamId}
-                    defaultValue={selectedRow.assigned_team_id}
-                    onChange={handleChange}
-                  >
-                    {teams.map((team) => (
-                      <MenuItem key={team.id} value={team.id}>
-                        {team.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {teams.length === 0 && (
-                    <FormHelperText sx={{ color: "error.main" }}>
-                      No teams available. Please create a team first.
-                    </FormHelperText>
-                  )}
-                </FormControl>
+              <Grid container item xs={12}>
+                {tabValue === 0 && (
+                  <>
+                    <Grid item xs={12} md={6} lg={6}>
+                      <Stack spacing={3}>
+                        {renderDetail("Complaint ID", complaint?.complaint_id)}
+                        {renderDetail("Department", complaint?.department)}
+                        {renderDetail(
+                          "Reference Number",
+                          complaint?.ref_number
+                        )}
+                        {renderDetail(
+                          "Category",
+                          complaint?.complaint_category
+                        )}
+                        {renderDetail("Type", complaint?.complaint_type)}
+                        {renderDetail("Details", complaint?.complaint_details)}
+                        {renderDetail(
+                          "Date",
+                          new Date(
+                            complaint?.submission_date
+                          ).toLocaleDateString()
+                        )}
+                        {renderDetail("Status", complaint?.status, true)}
+                      </Stack>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={12}
+                      md={6}
+                      display="flex"
+                      justifyContent="center"
+                      alignItems="center"
+                    >
+                      <CardMedia
+                        component="img"
+                        image={`data:image/jpeg;base64,${complaint?.image_url}`}
+                        alt="Complaint Image"
+                        sx={{
+                          width: "100%",
+                          height: "350px",
+                          borderRadius: "8px",
+                          boxShadow: 3,
+                          objectFit: "contain",
+                        }}
+                      />
+                    </Grid>
+                    <Divider />
+                    
+                    <Stack direction="column" spacing={6}>
+                    <Typography variant="h6" >
+                        Assign Team
+                      </Typography>
+                      <Stack direction="row" spacing={2}>
+                        <FormControl sx={{ m: 1, minWidth: 250 }}>
+                          <InputLabel id="assigned-team-label">
+                            Assign Team
+                          </InputLabel>
+                          <Select
+                            labelId="assigned-team-label"
+                            value={assignedTeamId}
+                            defaultValue={selectedRow.assigned_team_id}
+                            onChange={handleChange}
+                          >
+                            {teams.map((team) => (
+                              <MenuItem key={team.id} value={team.id}>
+                                {team.name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                          {teams.length === 0 && (
+                            <FormHelperText sx={{ color: "error.main" }}>
+                              No teams available. Please create a team first.
+                            </FormHelperText>
+                          )}
+                        </FormControl>
 
-                <LoadingButton
-                  variant="contained"
-                  color="primary"
-                  onClick={handleAssign}
-                  loading={loading}
-                  sx={{ alignSelf: "center" }}
-                  disabled={complaint?.status !== "PENDING"}
-                >
-                  Assign Team
-                </LoadingButton>
-              </Box>
-            </>
+                        <LoadingButton
+                          variant="contained"
+                          color="primary"
+                          onClick={handleAssign}
+                          loading={loading}
+                          sx={{ alignSelf: "center" }}
+                          disabled={complaint?.status !== "PENDING"}
+                        >
+                          Assign Team
+                        </LoadingButton>
+                      </Stack>
+                    </Stack>
+                  </>
+                )}
+                {tabValue === 1 && (
+                  <>
+                    <Grid item xs={6}>
+                      <Stack
+                        direction={"row"}
+                        alignItems={"center"}
+                        spacing={3}
+                        mb={2}
+                      >
+                        <Typography variant="h6" color="text.secondary">
+                          Team Remarks:
+                        </Typography>
+                        <Typography variant="h6">
+                          {proofDetails?.proof_description || "N/A"}
+                        </Typography>
+                      </Stack>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Date:{" "}
+                        {proofDetails?.date_uploaded
+                          ? new Intl.DateTimeFormat("en-US", {
+                              year: "numeric",
+                              month: "short",
+                              day: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              second: "2-digit",
+                            }).format(new Date(proofDetails?.date_uploaded))
+                          : "N/A"}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <CardMedia
+                        component="img"
+                        image={`data:image/jpeg;base64,${proofDetails?.proof_image}`}
+                        alt="Resolution Proof Image"
+                        sx={{
+                          width: "100%",
+                          height: "350px",
+                          borderRadius: "8px",
+                          boxShadow: 3,
+                          objectFit: "contain",
+                        }}
+                      />
+                    </Grid>
+                  </>
+                )}
+                {tabValue === 2 && (
+                  <Stack spacing={3}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Typography variant="h6" color={"text.secondary"}>
+                        Rating:
+                      </Typography>
+                      {(review?.rating &&
+                        [...Array(5)].map((_, index) => (
+                          <Typography
+                            key={index}
+                            variant="h3"
+                            color={
+                              index < review?.rating ? "yellow" : "disabled"
+                            }
+                          >
+                            ★
+                          </Typography>
+                        ))) ||
+                        "N/A"}
+                    </Stack>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Typography variant="h6" color="text.secondary">
+                        Feedback:
+                      </Typography>
+                      <Typography variant="h6">
+                        {review?.comment || "N/A"}
+                      </Typography>
+                    </Stack>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Date:{" "}
+                      {new Intl.DateTimeFormat("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      }).format(new Date(review?.date)) ?? "N/A"}
+                    </Typography>
+                  </Stack>
+                )}
+              </Grid>
+            </Grid>
           )}
         </CardContent>
         <Divider sx={{ my: 2 }} />

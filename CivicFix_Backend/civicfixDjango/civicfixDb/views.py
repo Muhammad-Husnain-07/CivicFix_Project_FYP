@@ -32,37 +32,34 @@ def notify(message):
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
         "notifications",
-            {
-                "type": "send_notification",
-                "message": message,
-            },
-        )
+        {
+            "type": "send_notification",
+            "message": message,
+        },
+    )
 
-# Create your views here.
+# Obtain token view for users
 class ObtainTokenView(APIView):
-    permission_classes=[]
+    permission_classes = []
     authentication_classes = []
-      # No permission required
 
     def post(self, request, *args, **kwargs):
         return self.authUser(request, *args, **kwargs)
-    
+
     def authUser(self, request, *args, **kwargs):
-        # authentication required, could be set to a specific user if needed
-        body= request.body
+        # Authenticate user based on CNIC and password
+        body = request.body
         body = json.loads(body)
-        data=body['data']
+        data = body['data']
         cnic = data['cnic']
-        password= data['password']
-        
-        # Validate required fields
+        password = data['password']
+
         if not cnic or not password:
-            return Response({"data": None,'message':{ "status":400,"description": 'CNIC and Password are required.'}}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Check if user exists
+            return Response({"data": None, 'message': {"status": 400, "description": 'CNIC and Password are required.'}}, status=status.HTTP_400_BAD_REQUEST)
+
         user = CustomUser.objects.filter(cnic=cnic, password=password).first()
         if not user:
-            return Response({"data": None,'message':{ "status":500,"description": 'Invalid CNIC or Password.'}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"data": None, 'message': {"status": 500, "description": 'Invalid CNIC or Password.'}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         try:
             refresh = RefreshToken.for_user(user)
@@ -79,35 +76,34 @@ class ObtainTokenView(APIView):
             }
             return Response({
                 'data': data,
-                'message':'User authenticated successfully'
-                }, status=status.HTTP_200_OK)
+                'message': 'User authenticated successfully'
+            }, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"data": None,'message':{ "status":500,"description": f"Error occurred: {str(e)}"}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"data": None, 'message': {"status": 500, "description": f"Error occurred: {str(e)}"}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# Obtain token view for team users
 class ObtainTokenTeamView(APIView):
-    permission_classes=[]
-    authentication_classes = [ ]
-      # No permission required
+    permission_classes = []
+    authentication_classes = []
 
     def post(self, request, *args, **kwargs):
         return self.authUser(request, *args, **kwargs)
-    
+
     def authUser(self, request, *args, **kwargs):
-        # authentication required, could be set to a specific user if needed
-        body= request.body
+        # Authenticate team user based on email and password
+        body = request.body
         body = json.loads(body)
-        data=body['data']
+        data = body['data']
         email = data['email']
-        password= data['password']
-        
-        # Validate required fields
+        password = data['password']
+
         if not email or not password:
-            return Response({"data": None,'message':{ "status":400,"description": 'Email and Password are required.'}}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Check if user exists
+            return Response({"data": None, 'message': {"status": 400, "description": 'Email and Password are required.'}}, status=status.HTTP_400_BAD_REQUEST)
+
         user = Teamuser.objects.filter(email=email, password=password).first()
-        team=Team.objects.filter(team_members=user).first()
+        team = Team.objects.filter(team_members=user).first()
         if not user:
-            return Response({"data": None,'message':{ "status":500,"description": 'Invalid email or Password.'}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"data": None, 'message': {"status": 500, "description": 'Invalid email or Password.'}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         try:
             refresh = RefreshToken.for_user(user)
             data = {
@@ -115,118 +111,114 @@ class ObtainTokenTeamView(APIView):
                 'name': user.name,
                 'phone': user.phone,
                 'email': user.email,
-                'team_id': team.id ,
+                'team_id': team.id,
                 "refresh_token": str(refresh),
                 "access_token": str(refresh.access_token)
             }
             return Response({
                 'data': data,
-                'message':'User authenticated successfully'
-                }, status=status.HTTP_200_OK)
+                'message': 'User authenticated successfully'
+            }, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"data": None,'message':{ "status":500,"description": f"Error occurred: {str(e)}"}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"data": None, 'message': {"status": 500, "description": f"Error occurred: {str(e)}"}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# Obtain token view for admin users
 class ObtainTokenAdminView(APIView):
-    permission_classes=[]
+    permission_classes = []
     authentication_classes = []
-      # No permission required
 
     def post(self, request, *args, **kwargs):
         return self.authUser(request, *args, **kwargs)
-    
+
     def authUser(self, request, *args, **kwargs):
-        # authentication required, could be set to a specific user if needed
-        body= request.body
+        # Authenticate admin user based on username and password
+        body = request.body
         data = json.loads(body)
         username = data['username']
-        password= data['password']
-        
-        # Validate required fields
+        password = data['password']
+
         if not username or not password:
-            return Response({"data": None,'message':{ "status":400,"description": 'Username and Password are required.'}}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Check if user exists
+            return Response({"data": None, 'message': {"status": 400, "description": 'Username and Password are required.'}}, status=status.HTTP_400_BAD_REQUEST)
+
         user = Admin.objects.filter(username=username, password=password).first()
         if not user:
-            return Response({"data": None,'message':{ "status":500,"description": 'Invalid username or Password.'}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"data": None, 'message': {"status": 500, "description": 'Invalid username or Password.'}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         try:
             refresh = RefreshToken()
             refresh['id'] = user.id
             refresh['username'] = user.username
             refresh['role'] = 'admin'
             data = {
-                    "username": user.username,
-                    "role":"admin",
-                    "access_token": str(refresh.access_token),
-                    "refresh_token": str(refresh)
-                }
+                "username": user.username,
+                "role": "admin",
+                "access_token": str(refresh.access_token),
+                "refresh_token": str(refresh)
+            }
             return Response({
                 'data': data,
-                'message':'User authenticated successfully'
-                }, status=status.HTTP_200_OK)
+                'message': 'User authenticated successfully'
+            }, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"data": None,'message':{ "status":500,"description": f"Error occurred: {str(e)}"}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"data": None, 'message': {"status": 500, "description": f"Error occurred: {str(e)}"}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# Obtain token view for sub-admin users
 class ObtainTokenSubAdminView(APIView):
-    permission_classes=[]
+    permission_classes = []
     authentication_classes = []
-      # No permission required
 
     def post(self, request, *args, **kwargs):
         return self.authUser(request, *args, **kwargs)
-    
+
     def authUser(self, request, *args, **kwargs):
-        # authentication required, could be set to a specific user if needed
-        body= request.body
+        # Authenticate sub-admin user based on username and password
+        body = request.body
         data = json.loads(body)
         username = data['username']
-        password= data['password']
-        
-        # Validate required fields
+        password = data['password']
+
         if not username or not password:
-            return Response({"data": None,'message':{ "status":400,"description": 'Username and Password are required.'}}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Check if user exists
+            return Response({"data": None, 'message': {"status": 400, "description": 'Username and Password are required.'}}, status=status.HTTP_400_BAD_REQUEST)
+
         user = SubAdmin.objects.filter(username=username, password=password).first()
         if not user:
-            return Response({"data": None,'message':{ "status":500,"description": 'Invalid username or Password.'}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+            return Response({"data": None, 'message': {"status": 500, "description": 'Invalid username or Password.'}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         try:
             refresh = RefreshToken()
             refresh['id'] = user.id
             refresh['username'] = user.username
-            refresh['role'] = 'subadmin',
+            refresh['role'] = 'subadmin'
             refresh['department'] = user.department.department_name
             data = {
-                    "username": user.username,
-                    "role":"subadmin",
-                    "department":user.department.department_name,
-                    "access_token": str(refresh.access_token),
-                    "refresh_token": str(refresh)
-                }
+                "username": user.username,
+                "role": "subadmin",
+                "department": user.department.department_name,
+                "access_token": str(refresh.access_token),
+                "refresh_token": str(refresh)
+            }
             return Response({
                 'data': data,
-                'message':'Sub Admin authenticated successfully'
-                }, status=status.HTTP_200_OK)
+                'message': 'Sub Admin authenticated successfully'
+            }, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"data": None,'message':{ "status":500,"description": f"Error occurred: {str(e)}"}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"data": None, 'message': {"status": 500, "description": f"Error occurred: {str(e)}"}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
+# Refresh token view
 class RefreshTokenView(APIView):
-    permission_classes=[]
+    permission_classes = []
     authentication_classes = []
-      # No permission required
 
     def post(self, request, *args, **kwargs):
         return self.refreshToken(request, *args, **kwargs)
-    
-    def refreshToken(self, request, *args, **kwargs):    
+
+    def refreshToken(self, request, *args, **kwargs):
+        # Refresh the JWT tokens
         try:
-            body= request.body
+            body = request.body
             body = json.loads(body)
-            data=body['data']
+            data = body['data']
             refresh_token = data['refresh_token']
-            
+
             if not refresh_token:
                 return Response({"data": None, 'message': {"status": 400, "description": 'Refresh token is required.'}}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -235,79 +227,76 @@ class RefreshTokenView(APIView):
                 "access_token": str(refresh.access_token),
                 "refresh_token": str(refresh)
             }
-            return Response({'data': data, 'message':{ "status": 200, "description": 'Token refreshed successfully'}}, status=status.HTTP_200_OK)
+            return Response({'data': data, 'message': {"status": 200, "description": 'Token refreshed successfully'}}, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response({"data": None, 'message': {"status": 500, "description": f"Error occurred: {str(e)}"}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
+# User registration view
 class UserRegisterView(viewsets.ViewSet):
-    permission_classes=[]
+    permission_classes = []
     authentication_classes = []
-      # No permissions required
 
     @action(detail=False, methods=['post'])
     def register(self, request, *args, **kwargs):
+        # Register a new user
         try:
             body = request.body
             body = json.loads(body)
             data = body['data']
-            
+
             if not data:
                 return Response({
                     "data": None,
-                    "message": {"status":400,"description":"Invalid request: Missing 'data' field"}
+                    "message": {"status": 400, "description": "Invalid request: Missing 'data' field"}
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-            # Extract fields
             fields = ['name', 'father_name', 'cnic', 'address', 'phone', 'email', 'password']
             user_data = {field: data.get(field) for field in fields}
 
-            # Validate required fields
             if not all(user_data.values()):
                 return Response({
                     "data": None,
-                    "message":{ "status":400,"description": "All fields are required"}
+                    "message": {"status": 400, "description": "All fields are required"}
                 }, status=status.HTTP_400_BAD_REQUEST)
-            
-            # Check for existing cnic, phone, or email
+
             for field in ['cnic', 'phone', 'email']:
                 if CustomUser.objects.filter(**{field: user_data[field]}).exists():
                     return Response({
                         "data": None,
                         "message": {"status": 400, "description": f"{field.capitalize().upper()} already exists"}
                     }, status=status.HTTP_400_BAD_REQUEST)
-            
-            # Create the user
+
             user = CustomUser.objects.create(**user_data)
             user.save()
             return Response({
                 "data": None,
-                "message":{ "status":200,"description": "User registered successfully"}
+                "message": {"status": 200, "description": "User registered successfully"}
             }, status=status.HTTP_201_CREATED)
-        
+
         except Exception as e:
             return Response({
                 "data": None,
-                "message":{ "status":500,"description": f"Error occurred: {str(e)}"}
+                "message": {"status": 500, "description": f"Error occurred: {str(e)}"}
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# Complaint management view
 class ComplaintViewSet(viewsets.ViewSet):
-    permission_classes=[]
+    permission_classes = []
     authentication_classes = [TokenOnlyAuthentication]
-    
+
     @action(detail=False, methods=['post'])
     def detectComplaintType(self, request, *args, **kwargs):
+        # Detect type of complaint based on image
         body = request.body
         body = json.loads(body)
         data = body.get('data', {})
 
-        # Initialize the client
         CLIENT = InferenceHTTPClient(
             api_url="https://detect.roboflow.com",
             api_key="lAKNzp806uAafXBzJmmr"
         )
 
-        # Decode the Base64 image
         image_base64 = data.get('image')
         if not image_base64:
             return Response({
@@ -318,7 +307,7 @@ class ComplaintViewSet(viewsets.ViewSet):
         try:
             if "data:image" in image_base64:
                 image_base64 = image_base64.split(",")[1]
-            
+
             image_bytes = base64.b64decode(image_base64)
             image = Image.open(io.BytesIO(image_bytes)).convert('RGB')
 
@@ -330,7 +319,6 @@ class ComplaintViewSet(viewsets.ViewSet):
                 "message": {"status": 400, "description": f"Image processing error: {str(e)}"}
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Infer on the image
         try:
             result = CLIENT.infer(image, model_id="civicfix-x71zo/3")
             predictions = result.get('predictions', [])
@@ -340,11 +328,9 @@ class ComplaintViewSet(viewsets.ViewSet):
                     "message": {"status": 400, "description": "No predictions found."}
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-            # Extract the first bounding box
             box = predictions[0]
             x, y, width, height = box['x'], box['y'], box['width'], box['height']
 
-            # Calculate crop coordinates proportionally to the original image size
             left = max(int(x - width / 2), 0)
             top = max(int(y - height / 2), 0)
             right = min(int(x + width / 2), original_width)
@@ -352,22 +338,17 @@ class ComplaintViewSet(viewsets.ViewSet):
 
             cropped_image = image.crop((left, top, right, bottom))
 
-            #open the cropped image
-            #cropped_image.show()
-            
-            # Convert the cropped image to numpy array for EasyOCR
             cropped_image_np = np.array(cropped_image)
 
-            # Apply EasyOCR
             reader = easyocr.Reader(['en'])
             ocr_result = reader.readtext(cropped_image_np)
-            extracted_text = " ".join([item[1] for item in ocr_result])  # Combine all detected text
+            extracted_text = " ".join([item[1] for item in ocr_result])
             complaint_class = result['predictions'][0]['class']
-            if(complaint_class=='meter_number'):
-                complaint_class='SNGPL'
-            elif(complaint_class=='sr_number'):
-                complaint_class='LESCO'
-                
+            if complaint_class == 'meter_number':
+                complaint_class = 'SNGPL'
+            elif complaint_class == 'sr_number':
+                complaint_class = 'LESCO'
+
             return Response({
                 "data": {
                     "inference": result,
@@ -383,16 +364,14 @@ class ComplaintViewSet(viewsets.ViewSet):
                 "message": {"status": 500, "description": f"Inference or OCR error: {str(e)}"}
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-    
     @action(detail=False, methods=['post'])
     def createComplaint(self, request, *args, **kwargs):
+        # Create a new complaint
         body = request.body
         body = json.loads(body)
         data = body['data']
         department_name = data.get('department')
-        
-        # Resolve department by name if provided
+
         if department_name:
             try:
                 department = Department.objects.get(department_name=department_name)
@@ -406,7 +385,7 @@ class ComplaintViewSet(viewsets.ViewSet):
         serializer = ComplaintSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            notification_object={
+            notification_object = {
                 "title": "New Complaint Lodged",
                 "body": "A new complaint has been lodged.",
                 "sub_admins": list(SubAdmin.objects.filter(department__department_name=department_name).values_list('username', flat=True)),
@@ -416,8 +395,8 @@ class ComplaintViewSet(viewsets.ViewSet):
                 {"data": serializer.data, "message": {"status": 200, "description": "Complaint created successfully"}},
                 status=status.HTTP_200_OK
             )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
-        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class ComplaintUpdateView(generics.UpdateAPIView):
     permission_classes=[]
     queryset = Complaint.objects.all()
@@ -515,7 +494,15 @@ class Teamcreateview(generics.CreateAPIView):
     
 
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        department_name = serializer.validated_data['department']
+        team_name = serializer.validated_data['name']
+        if Team.objects.filter(department=department_name, name=team_name).exists():
+            return Response({"detail": "Team name already exists in the department"}, status=400)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class TeamUpdateView(generics.UpdateAPIView):
     permission_classes=[]
@@ -593,14 +580,14 @@ class DepartmentListView(generics.ListAPIView):
     
 class TeamListByDepartmentView(generics.ListAPIView):
     permission_classes=[]
-    authentication_classes = [TokenOnlyAuthentication]
+    authentication_classes = []
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
 
     def get_queryset(self):
         department_name = self.request.query_params.get('department_name')
         if department_name:
-            department = get_object_or_404(Department, deptt_name=department_name)
+            department = Department.objects.filter(department_name=department_name).first()
             return Team.objects.filter(department=department)
         return Team.objects.all()
 
@@ -627,15 +614,18 @@ class ProofOfResolutionCreateView(generics.CreateAPIView):
 class ProofOfResolutionDetailView(generics.RetrieveAPIView):
     queryset = ProofOfResolution.objects.all()
     serializer_class = ProofOfResolutionListSerializer
-    lookup_field = 'id'
-    authentication_classes = []
+    lookup_field = 'complaint__complaint_id'
+    authentication_classes = [TokenOnlyAuthentication]
     permission_classes = []
 
     def get_object(self):
         complaint_id = self.request.query_params.get('complaint_id')
         if complaint_id:
-            return ProofOfResolution.objects.get(complaint__complaint_id=complaint_id)
-        return super().get_object()
+            proof = ProofOfResolution.objects.get(complaint__complaint_id=complaint_id)
+            self.serializer_class = ProofOfResolutionListSerializer
+            return proof
+        else:
+            return super().get_object()
 
 class FeedbackCreateView(generics.CreateAPIView):
     """API to submit user feedback"""
@@ -660,12 +650,22 @@ class FeedbackListView(generics.ListAPIView):
     permission_classes=[]
 
 
-class FeedbackDetailView(generics.RetrieveAPIView):
-    """API to get feedback by ID"""
+class FeedbackByComplaintIdView(generics.RetrieveAPIView):
+    """API to get feedback by complaint ID"""
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
-    authentication_classes = [TokenOnlyAuthentication]
-    permission_classes=[]
+    authentication_classes = []
+    permission_classes = []
+    lookup_field = 'complaint_id'
+
+    def get(self, request, *args, **kwargs):
+        complaint_id = self.request.query_params.get('complaint_id')
+        feedback = self.queryset.filter(complaint__complaint_id=complaint_id).first()
+        if feedback:
+            serializer = self.serializer_class(feedback)
+            return Response(serializer.data)
+        else:
+            return Response({"error": "Feedback not found"}, status=status.HTTP_404_NOT_FOUND)
 
 # Charts Stats
 class ComplaintStatsView(generics.ListAPIView):
@@ -928,3 +928,29 @@ class DepartmentMonthlyStatsView(generics.ListAPIView):
         }
 
         return Response(data)
+
+class ComplaintCoordsMapView(generics.ListAPIView):
+    serializer_class = ComplaintCoordSerializer
+    permission_classes = []
+    authentication_classes=[]
+
+    def get_queryset(self):
+        queryset = Complaint.objects.exclude(latitude=None).exclude(longitude=None)
+        date_filter = self.request.query_params.get("filter", None)
+        department = self.request.query_params.get("department", None)
+
+        if department:
+            queryset = queryset.filter(department__department_name__iexact=department)
+
+        if date_filter:
+            today = now().date()
+            if date_filter == "today":
+                queryset = queryset.filter(submission_date__date=today)
+            elif date_filter == "yesterday":
+                queryset = queryset.filter(submission_date__date=today - timedelta(days=1))
+            elif date_filter == "last7days":
+                queryset = queryset.filter(submission_date__date__gte=today - timedelta(days=7))
+            elif date_filter == "last30days":
+                queryset = queryset.filter(submission_date__date__gte=today - timedelta(days=30))
+
+        return queryset

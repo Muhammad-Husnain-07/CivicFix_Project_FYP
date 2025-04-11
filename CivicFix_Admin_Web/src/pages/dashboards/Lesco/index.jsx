@@ -17,6 +17,7 @@ import MultiAxisLineChart from "./MultiAxisLineChart";
 import Loader from "../../../components/Loader";
 import StackedBarChart from "./StackedBarChart";
 import apiClient from "../../../utils/axiosConfig";
+import MapComponent from "./MapComponent";
 const Divider = styled(MuiDivider)(spacing);
 const Typography = styled(MuiTypography)(spacing);
 
@@ -101,6 +102,9 @@ function LESCO({ theme }) {
         </Grid>
         <Grid item xs={12} sm={12} md={7} lg={7} xl={7}>
           <MultiAxisLineChart />
+        </Grid>
+        <Grid item xs={12} sm={12} md={12} lg={12} xl={12}>
+          <MapComponent filter={filter?.value} />
         </Grid>
       </Grid>
     </React.Fragment>

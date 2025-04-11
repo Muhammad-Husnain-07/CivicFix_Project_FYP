@@ -76,7 +76,7 @@ const StackedBarChart = ({ theme, filter }) => {
       },
     },
   };
-console.log(chartData)
+
   return (
     <Card mb={1}>
       <CardContent>

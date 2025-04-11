@@ -54,7 +54,6 @@ export default function RootLayout() {
 
   // Conditionally render navigators based on token presence
   return (
-    // <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
     <ThemeProvider value={DarkTheme}>
       <Stack screenOptions={{headerShown: false}}>
         <Stack.Screen name="(auth)" options={{headerShown: false}} />

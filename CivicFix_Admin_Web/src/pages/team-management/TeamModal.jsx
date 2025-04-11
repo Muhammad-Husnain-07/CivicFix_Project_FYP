@@ -16,7 +16,7 @@ import { X } from "lucide-react";
 import apiClient from "../../utils/axiosConfig";
 import Toast from "../../components/snackbar/Toast";
 
-const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
+const TeamModal = ({ openModal, handleCloseModal,getTeam,getTeamUsers, rowData }) => {
   const [isUpdate, setIsUpdate] = useState(false);
   const [users, setUsers] = useState([]);
   const [availableUsers, setAvailableUsers] = useState([]);
@@ -43,24 +43,29 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
       return;
     }
     if (!state.team_members.length) {
-      setErrors({ ...errors, team_members: "At least one team member is required" });
+      setErrors({
+        ...errors,
+        team_members: "At least one team member is required",
+      });
       Toast("At least one team member is required", "warning");
       return;
     }
     const dataToSubmit = { ...state };
-    console.log(dataToSubmit);
+
     try {
       if (isUpdate) {
         apiClient
           .put(`/team/${rowData.id}/update`, dataToSubmit)
           .then(() => {
-            getTeamUsers();
             handleCloseModal();
+            setErrors({name: "", team_members: ""});
+            getTeam();
+            getTeamUsers();
             Toast("Team updated successfully", "success");
           })
           .catch((error) => {
             console.log(error);
-            Toast("Error updating team", "error");
+            Toast(error.response.data.detail || "Error updating team", "error");
           });
       } else {
         apiClient
@@ -69,13 +74,15 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
             department: localStorage.getItem("department_id"),
           })
           .then(() => {
-            getTeamUsers();
             handleCloseModal();
+            setErrors({name: "", team_members: ""});
+            getTeam();
+            getTeamUsers();
             Toast("Team created successfully", "success");
           })
           .catch((error) => {
             console.log(error);
-            Toast("Error creating team", "error");
+            Toast(error.response.data.detail || "Error creating team", "error");
           });
       }
     } catch (error) {
@@ -128,7 +135,13 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
     .filter((user) => user.department == localStorage.getItem("department_id"))
     .map(({ id, name }) => ({ label: name, value: id }));
   return (
-    <Dialog open={openModal} onClose={handleCloseModal}>
+    <Dialog
+      open={openModal}
+      onClose={() => {
+        handleCloseModal();
+        setErrors({ name: "", team_members: "" });
+      }}
+    >
       <DialogTitle>
         <Grid
           container
@@ -138,7 +151,13 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
         >
           <Grid item>{isUpdate ? "Edit Team" : "Add Team"}</Grid>
           <Grid item>
-            <IconButton aria-label="close" onClick={handleCloseModal}>
+            <IconButton
+              aria-label="close"
+              onClick={() => {
+                handleCloseModal();
+                setErrors({ name: "", team_members: "" });
+              }}
+            >
               <X />
             </IconButton>
           </Grid>
@@ -192,7 +211,7 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCloseModal} variant="contained">
+        <Button onClick={() => {handleCloseModal();setErrors({ name: "", team_members: "" });}} variant="contained">
           Cancel
         </Button>
         <Button onClick={handleSubmitForm} variant="contained">
@@ -204,4 +223,3 @@ const TeamModal = ({ openModal, handleCloseModal, getTeamUsers, rowData }) => {
 };
 
 export default TeamModal;
-
