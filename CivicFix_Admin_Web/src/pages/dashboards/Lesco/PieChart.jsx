@@ -5,7 +5,6 @@ import Chart from "react-apexcharts";
 
 import { CardContent, Card as MuiCard, Typography } from "@mui/material";
 import { spacing } from "@mui/system";
-import axios from "axios";
 import Loader from "../../../components/Loader";
 import apiClient from "../../../utils/axiosConfig";
 const Card = styled(MuiCard)(spacing);

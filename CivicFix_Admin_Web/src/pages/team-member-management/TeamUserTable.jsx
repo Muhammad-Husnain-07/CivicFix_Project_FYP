@@ -10,25 +10,24 @@ const Box = styled(MuiBox)(spacing);
 const TeamTable = ({ data, setRowData, setOpenModal }) => {
 
   const columns = [
-    { name: "id", label: "ID" },
-    { name: "name", label: "Name" },
-    { name: "phone", label: "Phone" },
-    { name: "email", label: "Email" },
+    { name: "id", label: "ID", options: { filter: false, sort: true } },
+    { name: "name", label: "Name", options: { filter: true, sort: true } },
+    { name: "phone", label: "Phone", options: { filter: false, sort: true } },
+    { name: "email", label: "Email", options: { filter: false, sort: true } },
     {
       name: "action",
       label: "Action",
       options: {
+        filter: false,
+        sort: false,
         customBodyRender: (value, tableMeta, updateValue) => (
           <Grid container spacing={2} wrap="nowrap">
             <Grid item>
               <PencilIcon
-                onClick={() => {setRowData(data[tableMeta.rowIndex]); setOpenModal(true);}}
+                onClick={() => { setRowData(data[tableMeta.rowIndex]); setOpenModal(true); }}
                 size={18}
               />
             </Grid>
-            {/* <Grid item>
-              <Trash size={18} />
-            </Grid> */}
           </Grid>
         ),
       },

@@ -4,14 +4,13 @@ import { withTheme } from "@emotion/react";
 import { Line } from "react-chartjs-2";
 import { Card as MuiCard, CardContent, CardHeader } from "@mui/material";
 import { spacing } from "@mui/system";
-import axios from "axios";
 import Loader from "../../../components/Loader";
 import apiClient from "../../../utils/axiosConfig";
 
 const Card = styled(MuiCard)(spacing);
 
 const ChartWrapper = styled.div`
-  height: 290px;
+  height: 275px;
   width: 100%;
 `;
 function MultiAxisLineChart({ theme }) {

@@ -57,7 +57,7 @@ function SignIn() {
 
           if(localStorage.getItem("username")) navigate("/dashboard");
         } catch (error) {
-          const message = error.message || "Something went wrong";
+          const message = error?.response?.data?.message?.description || "Something went wrong";
 
           setStatus({ success: false });
           setErrors({ submit: message });

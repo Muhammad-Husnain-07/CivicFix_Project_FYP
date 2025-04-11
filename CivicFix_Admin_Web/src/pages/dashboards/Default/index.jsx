@@ -10,7 +10,6 @@ import {
   CardContent,
 } from "@mui/material";
 import { spacing } from "@mui/system";
-import { green, red } from "@mui/material/colors";
 import Actions from "./Actions";
 import LineChart from "./LineChart";
 import Stats from "./Stats";
@@ -18,6 +17,7 @@ import PieChart from "./PieChart";
 import MultiAxisLineChart from "./MultiAxisLineChart";
 import Loader from "../../../components/Loader";
 import apiClient from "../../../utils/axiosConfig";
+import MapComponent from "./MapComponent";
 
 const Divider = styled(MuiDivider)(spacing);
 const Typography = styled(MuiTypography)(spacing);
@@ -71,10 +71,10 @@ function Default({ theme }) {
       <Divider my={6} />
 
       <Grid container spacing={6} mb={6}>
-        <Grid item xs={12} sm={12} md={5} lg={5} xl={5}>
+        <Grid item xs={12} sm={12} md={6} lg={6} xl={6}>
           <PieChart filter={filter?.value} />
         </Grid>
-        <Grid item xs={12} sm={12} md={4} lg={6} xl={6}>
+        <Grid item xs={12} sm={12} md={6} lg={6} xl={6}>
           {statsData ? (
             <>
               <Grid container spacing={3}>
@@ -103,13 +103,16 @@ function Default({ theme }) {
             </Grid>
           )}
         </Grid>
+        <Grid item xs={12} sm={12} md={12} lg={12} xl={12}>
+          <MapComponent filter={filter?.value} />
+        </Grid>
       </Grid>
 
       <Grid container spacing={6} mb={10}>
-        <Grid item xs={12} sm={12} md={12} lg={12} xl={12}>
+        <Grid item xs={12} sm={12} md={6} lg={6} xl={6}>
           <LineChart filter={filter?.value} />
         </Grid>
-        <Grid item xs={12} sm={12} md={12} lg={12} xl={12}>
+        <Grid item xs={12} sm={12} md={6} lg={6} xl={6}>
           <MultiAxisLineChart />
         </Grid>
       </Grid>

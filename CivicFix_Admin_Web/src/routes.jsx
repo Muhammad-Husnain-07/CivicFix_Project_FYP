@@ -1,14 +1,12 @@
 import React from "react";
 import { useRoutes } from "react-router-dom";
 
-import async from "./components/Async";
 
 // All pages that rely on 3rd party components (other than MUI) are
 // loaded asynchronously, to keep the initial JS bundle to a minimum size
 
 // Layouts
 import AuthLayout from "./layouts/Auth";
-import ErrorLayout from "./layouts/Error";
 import DashboardLayout from "./layouts/Dashboard";
 
 // Auth components

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
@@ -14,16 +14,17 @@ import TeamModal from "./TeamModal";
 import apiClient from "../../utils/axiosConfig";
 
 function TeamManagement() {
-  const [rowData, setRowData] = React.useState(null);
-  const [openModal, setOpenModal] = React.useState(false);
-  const [data, setData] = React.useState([]);
+  const [rowData, setRowData] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
+  const [data, setData] = useState([]);
+  const [users, setUsers] = useState([]);
 
   const handleCloseModal = () => {
     setOpenModal(false);
     setRowData(null);
   };
 
-  const getTeamUsers = async () => {
+  const getTeam = async () => {
     try {
       const response = await apiClient.get("/teams/list");
       const data = response;
@@ -36,12 +37,25 @@ function TeamManagement() {
     }
   };
 
+  const getTeamUsers = async () => {
+    try {
+      const response = await apiClient.get("/teamusers");
+      const data = response;
+      if (data) {
+        setUsers(data);
+      }
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    }
+  };
+
   useEffect(() => {
+    getTeam();
     getTeamUsers();
   }, []);
 
   return (
-    <React.Fragment>
+    <>
       <Helmet title="Team Management" />
       <Grid container spacing={4}>
         <Grid item xs={12} sm={12} md={12} lg={12} sx={{ textAlign: "right" }}>
@@ -54,16 +68,17 @@ function TeamManagement() {
           </Button>
         </Grid>
         <Grid item xs={12} sm={12} md={12} lg={12}>
-          <TeamTable setRowData={setRowData} setOpenModal={setOpenModal} data={data} />
+          <TeamTable setRowData={setRowData} setOpenModal={setOpenModal} data={data} users={users}/>
         </Grid>
       </Grid>
-      <TeamModal
+      {openModal && <TeamModal
         openModal={openModal}
         handleCloseModal={handleCloseModal}
         rowData={rowData}
+        getTeam={getTeam}
         getTeamUsers={getTeamUsers}
-      />
-    </React.Fragment>
+      />}
+    </>
   );
 }
 

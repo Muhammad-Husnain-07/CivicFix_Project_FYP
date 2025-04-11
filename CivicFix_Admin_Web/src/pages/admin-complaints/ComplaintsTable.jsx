@@ -89,7 +89,7 @@ const ComplaintsTable = ({ theme }) => {
       name: "complaint_id",
       label: "ID",
       options: {
-        filter: true,
+        filter: false,
         sort: false,
       },
     },
@@ -97,7 +97,7 @@ const ComplaintsTable = ({ theme }) => {
       name: "department",
       label: "Department",
       options: {
-        filter: true,
+        filter: false,
         sort: false,
       },
     },
@@ -105,7 +105,7 @@ const ComplaintsTable = ({ theme }) => {
       name: "ref_number",
       label: "Reference Number",
       options: {
-        filter: true,
+        filter: false,
         sort: false,
       },
     },
@@ -172,7 +172,7 @@ const ComplaintsTable = ({ theme }) => {
       name: "resolved_status",
       label: "Resolved Status",
       options: {
-        filter: true,
+        filter: false,
         sort: false,
         customBodyRender: (value, tableMeta, updateValue) => {
           return value ? (

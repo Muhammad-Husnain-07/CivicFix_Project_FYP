@@ -11,8 +11,6 @@ import App from "./App";
 import reportWebVitals from "./utils/reportWebVitals";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
-// Note: Remove the following line if you want to disable the API mocks.
-import "./mocks";
 
 const container = document.getElementById("root");
 const root = createRoot(container);
