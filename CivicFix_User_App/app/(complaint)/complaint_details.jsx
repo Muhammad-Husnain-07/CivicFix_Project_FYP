@@ -127,25 +127,21 @@ export default ComplaintDetailScreen = () => {
   };
 
   const validateDetectedText = text => {
+    let regex;
     if (params?.complaint_class === 'SNGPL') {
-      const regex = /^[a-zA-Z0-9]+$/;
-      if (!regex.test(text)) {
-        ToastAndroid.show(
-          'Meter number should only contain alphanumeric characters',
-          ToastAndroid.LONG,
-        );
-        return false;
-      }
+      regex = /^[a-zA-Z0-9]+$/;
+    } else if (params?.complaint_class === 'LESCO') {
+      regex = /^[a-zA-Z0-9]+$/;
     }
-    if (params?.complaint_class === 'LESCO') {
-      const regex = /^[a-zA-Z0-9]+$/;
-      if (!regex.test(text)) {
-        ToastAndroid.show(
-          'Reference number should only contain alphanumeric characters',
-          ToastAndroid.LONG,
-        );
-        return false;
-      }
+    if (regex && !regex.test(text)) {
+      const cleanText = text.replace(/[^a-zA-Z0-9]/g, '');
+      setDetectedText(cleanText);
+      ToastAndroid.show(
+        `Please enter a valid ${params?.complaint_class === 'SNGPL' ? 'meter number' : 'reference number'}.
+        Special characters have been removed.`,
+        ToastAndroid.LONG,
+      );
+      return false;
     }
     return true;
   };
