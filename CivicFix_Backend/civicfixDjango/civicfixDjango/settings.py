@@ -37,8 +37,8 @@ ALLOWED_HOSTS = []
 SIMPLE_JWT = {
     'USER_ID_FIELD': 'id',  # Custom user ID field
     'REQUIRED_FIELDS': [],  # No additional fields are required
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=30),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=45),  
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=60),
 }
 
 # Max file upload size
