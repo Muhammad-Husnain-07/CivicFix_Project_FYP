@@ -34,9 +34,9 @@ const CardContent = styled(MuiCardContent)`
 const groupComplaints = (complaints, precision = 3) =>
   Object.values(
     complaints.reduce((grouped, complaint) => {
-      const key = `${complaint.latitude.toFixed(precision)},${complaint.longitude.toFixed(
+      const key = `${complaint.latitude.toFixed(
         precision
-      )}`;
+      )},${complaint.longitude.toFixed(precision)}`;
       if (!grouped[key]) {
         grouped[key] = {
           lat: parseFloat(complaint.latitude.toFixed(precision)),
@@ -62,7 +62,9 @@ const MapComponent = ({ theme, filter }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await apiClient("/complaints/map-coords?department=SNGPL&filter=" + filter);
+        const response = await apiClient(
+          "/complaints/map-coords?department=SNGPL&filter=" + filter
+        );
         if (response) {
           setComplaints(response);
         }
@@ -91,9 +93,7 @@ const MapComponent = ({ theme, filter }) => {
   const grouped = groupComplaints(complaints);
   return (
     <Card mb={6} style={{ height: 500, width: "100%" }}>
-      <CardHeader
-        title="Complaints Highlight on Map"
-      />
+      <CardHeader title="Complaints Highlight on Map" />
       <CardContent style={{ height: "90%", width: "100%" }}>
         <Container style={{ height: "90%", width: "100%" }}>
           <MapContainer
@@ -122,7 +122,8 @@ const MapComponent = ({ theme, filter }) => {
                   radius={5 + group.count * 3}
                   pathOptions={{
                     color: group.department === "LESCO" ? "#e74c3c" : "#2980b9",
-                    fillColor: group.department === "LESCO" ? "#fadbd8" : "#d6eaf8",
+                    fillColor:
+                      group.department === "LESCO" ? "#fadbd8" : "#d6eaf8",
                     fillOpacity: 0.7,
                   }}
                   eventHandlers={{
@@ -148,7 +149,9 @@ const MapComponent = ({ theme, filter }) => {
                   icon={L.divIcon({
                     className: "custom-marker",
                     html: `<div style="background:${
-                      complaint.department_name === "LESCO" ? "#e74c3c" : "#2980b9"
+                      complaint.department_name === "LESCO"
+                        ? "#e74c3c"
+                        : "#2980b9"
                     };width:14px;height:14px;border-radius:50%"></div>`,
                   })}
                   eventHandlers={{
@@ -162,9 +165,7 @@ const MapComponent = ({ theme, filter }) => {
                     <br />
                     Complaint ID: {complaint.complaint_id}
                   </Popup>
-                  <Tooltip>
-                    {`Complaint ID: ${complaint.complaint_id}`}
-                  </Tooltip>
+                  <Tooltip>{`Complaint ID: ${complaint.complaint_id}`}</Tooltip>
                 </Marker>
               ))}
           </MapContainer>
@@ -175,4 +176,3 @@ const MapComponent = ({ theme, filter }) => {
 };
 
 export default MapComponent;
-

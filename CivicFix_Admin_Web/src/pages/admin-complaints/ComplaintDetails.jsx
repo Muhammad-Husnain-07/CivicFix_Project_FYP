@@ -87,6 +87,7 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams }) => {
     apiClient
       .get(`/get-proof-of-resolution?complaint_id=${complaintId}`)
       .then((response) => {
+        if (response?.error) Toast(response.message, "error");
         if (response) {
           setProofDetails(response);
         }
@@ -112,9 +113,11 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams }) => {
   }, [selectedRow]);
 
   const handleTabChange = (event, newValue) => {
-    if (!review) return;
-    if (!proofDetails) return;
-    setTabValue(newValue);
+    if (newValue === 0) setTabValue(newValue);
+    if (newValue === 1 && proofDetails?.hasOwnProperty("proof_description"))
+      setTabValue(newValue);
+    if (newValue === 2 && review?.hasOwnProperty("comment"))
+      setTabValue(newValue);
   };
 
   return (
@@ -259,7 +262,7 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams }) => {
                               hour: "2-digit",
                               minute: "2-digit",
                               second: "2-digit",
-                            }).format(new Date(proofDetails?.date_uploaded))
+                            })?.format(new Date(proofDetails?.date_uploaded))
                           : "N/A"}
                       </Typography>
                     </Grid>
@@ -309,14 +312,16 @@ const ComplaintDetails = ({ selectedRow, open, setOpen, teams }) => {
                     </Stack>
                     <Typography variant="subtitle2" color="text.secondary">
                       Date:{" "}
-                      {new Intl.DateTimeFormat("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                      }).format(new Date(review?.date)) ?? "N/A"}
+                      {review?.date
+                        ? new Intl.DateTimeFormat("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                          })?.format(new Date(review?.date))
+                        : "N/A"}
                     </Typography>
                   </Stack>
                 )}
